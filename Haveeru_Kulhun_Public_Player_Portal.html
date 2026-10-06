@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<title>Haveeru Kulhun League — Player Stats</title>
+<style>
+:root{
+  --line:rgba(255,255,255,.20);
+  --muted:rgba(226,232,240,.72);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;color:#f8fafc;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%,rgba(56,189,248,.28),transparent 32%),
+    radial-gradient(circle at 90% 20%,rgba(139,92,246,.30),transparent 30%),
+    radial-gradient(circle at 50% 100%,rgba(14,165,233,.20),transparent 35%),
+    linear-gradient(135deg,#07111f,#0b1220 48%,#111827);
+  background-attachment:fixed;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;
+  background-image:radial-gradient(rgba(255,255,255,.14) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.container{width:min(1100px,92%);margin:auto}
+header{
+  position:sticky;top:0;z-index:10;
+  background:rgba(15,23,42,.48);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(25px) saturate(150%);
+  -webkit-backdrop-filter:blur(25px) saturate(150%);
+}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 0}
+.logo{font-size:20px;font-weight:800}
+.logo span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{
+  color:#fff;text-decoration:none;padding:9px 13px;border-radius:12px;
+  background:rgba(255,255,255,.08);border:1px solid var(--line);
+}
+.hero{text-align:center;padding:52px 0 28px}
+.hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 10px}
+.hero p{color:var(--muted);margin:0}
+.card{
+  background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.065));
+  border:1px solid var(--line);border-radius:22px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 20px 55px rgba(0,0,0,.20);
+  backdrop-filter:blur(24px) saturate(150%);
+  -webkit-backdrop-filter:blur(24px) saturate(150%);
+}
+.search{padding:18px;margin-bottom:20px}
+input{
+  width:100%;padding:14px 16px;border-radius:14px;
+  border:1px solid var(--line);background:rgba(255,255,255,.09);
+  color:#fff;outline:none;font-size:16px;
+}
+input::placeholder{color:rgba(226,232,240,.55)}
+.status{padding:12px 4px;color:var(--muted);font-size:14px}
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.player-card{padding:18px;cursor:pointer;transition:.2s}
+.player-card:hover{transform:translateY(-3px);background:rgba(255,255,255,.16)}
+.player-top{display:flex;align-items:center;gap:14px}
+.avatar{
+  width:62px;height:62px;border-radius:50%;object-fit:cover;
+  border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1)
+}
+.player-name{font-size:19px;font-weight:800}
+.nickname{color:var(--muted);font-size:14px;margin-top:3px}
+.tap{margin-top:15px;color:#7dd3fc;font-size:13px}
+.profile{display:none;padding:22px;margin-top:20px}
+.profile.show{display:block}
+.profile-head{display:flex;gap:18px;align-items:center}
+.profile-head img{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--line)}
+.profile h2{margin:0 0 4px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:22px 0}
+.stat{
+  padding:17px;border:1px solid var(--line);border-radius:16px;
+  background:rgba(255,255,255,.07);text-align:center
+}
+.stat strong{display:block;font-size:28px}
+.stat span{font-size:12px;color:var(--muted)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+th{color:#bae6fd;font-size:13px}
+.result{font-weight:800}
+.win{color:#86efac}.draw{color:#fde68a}.loss{color:#fca5a5}
+button{
+  border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+  background:rgba(255,255,255,.10);color:#fff;cursor:pointer
+}
+footer{text-align:center;color:var(--muted);padding:35px 0}
+@media(max-width:600px){
+  .header-inner{align-items:flex-start;flex-direction:column}
+  .nav{width:100%}.nav a{flex:1;text-align:center;font-size:13px}
+  .hero{padding:38px 0 22px}
+  .profile-head{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container header-inner">
+    <div class="logo">⚽ Haveeru Kulhun League<span>Public Player Statistics</span></div>
+    <nav class="nav">
+      <a href="#leaderboard" onclick="showLeaderboard();return false;">🏆 Point Table</a>
+      <a href="#players" onclick="showPlayers();return false;">👤 Players</a>
+      <a href="admin.html">Staff Login</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>Player Statistics</h1>
+    <p>Search a player to view their latest league statistics and match history.</p>
+  </section>
+
+  <section class="card search">
+    <input id="searchInput" placeholder="🔎 Search player name or nickname..." oninput="filterPlayers()">
+    <div id="status" class="status">Loading players...</div>
+  </section>
+
+  <section id="leaderboard" class="card profile show">
+    <h2>🏆 Point Table</h2>
+    <p style="color:var(--muted);margin-top:-8px">Current league standings</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Player</th><th>Matches</th><th>W</th><th>D</th><th>L</th><th>Clean Sheets</th><th>Points</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <h2 style="margin:30px 0 14px">👤 Players</h2>
+  <section id="players" class="players"></section>
+
+  <section id="profile" class="card profile"></section>
+</main>
+
+<footer>Haveeru Kulhun League</footer>
+
+<script>
+const SUPABASE_URL = "https://yafowakgpjvzapmejptn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_vOuJPPohicfbh8mFf-VQlA_jQ244rjs";
+
+let players = [];
+let records = [];
+
+async function api(path){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:"Bearer " + SUPABASE_KEY
+    }
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function load(){
+  try{
+    [players,records] = await Promise.all([
+      api('Players?select=id,Name,"Nick Name",Photo_url&order=Name.asc'),
+      api('player_match_records?select=*&order=match_date.desc')
+    ]);
+    renderPlayers(players);
+    buildLeaderboard();
+    document.getElementById('status').textContent = `${players.length} players available`;
+  }catch(e){
+    document.getElementById('status').textContent = "Unable to load player data. Check your Supabase publishable key.";
+    console.error(e);
+  }
+}
+
+function renderPlayers(list){
+  const box=document.getElementById('players');
+  box.innerHTML='';
+  if(!list.length){
+    box.innerHTML='<div class="card" style="padding:20px">No players found.</div>';
+    return;
+  }
+  list.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='card player-card';
+    const photo=p.Photo_url || 'https://placehold.co/120x120?text=Player';
+    div.innerHTML=`
+      <div class="player-top">
+        <img class="avatar" src="${escapeAttr(photo)}" onerror="this.src='https://placehold.co/120x120?text=Player'">
+        <div>
+          <div class="player-name">${escapeHtml(p.Name || '')}</div>
+          <div class="nickname">${escapeHtml(p['Nick Name'] || '')}</div>
+        </div>
+      </div>
+      <div class="tap">Tap to view statistics →</div>`;
+    div.onclick=()=>showProfile(p.id);
+    box.appendChild(div);
+  });
+}
+
+function filterPlayers(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  renderPlayers(players.filter(p=>
+    (p.Name||'').toLowerCase().includes(q) ||
+    (p['Nick Name']||'').toLowerCase().includes(q)
+  ));
+}
+
+function showProfile(id){
+  const p=players.find(x=>x.id===id);
+  if(!p)return;
+  const rs=records.filter(r=>Number(r.player_id)===Number(id));
+  let matches=rs.length,wins=0,draws=0,losses=0,points=0,goals=0,clean=0;
+  rs.forEach(r=>{
+    const result=r.match_result || (r.player_score!=null&&r.opposition_score!=null ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw') : '');
+    if(result==='Win')wins++;
+    if(result==='Draw')draws++;
+    if(result==='Loss')losses++;
+    points += Number(r.points||0);
+    if(r.player_score!=null)goals += Number(r.player_score);
+    if(r.clean_sheet)clean++;
+  });
+  const photo=p.Photo_url || 'https://placehold.co/180x180?text=Player';
+  const profile=document.getElementById('profile');
+  profile.className='card profile show';
+  profile.innerHTML=`
+    <button onclick="closeProfile()">← Back to players</button>
+    <div class="profile-head" style="margin-top:18px">
+      <img src="${escapeAttr(photo)}" onerror="this.src='https://placehold.co/180x180?text=Player'">
+      <div><h2>${escapeHtml(p.Name||'')}</h2><div style="color:var(--muted)">${escapeHtml(p['Nick Name']||'')}</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat"><strong>${matches}</strong><span>Matches</span></div>
+      <div class="stat"><strong>${wins}</strong><span>Wins</span></div>
+      <div class="stat"><strong>${draws}</strong><span>Draws</span></div>
+      <div class="stat"><strong>${losses}</strong><span>Losses</span></div>
+      <div class="stat"><strong>${points}</strong><span>Points</span></div>
+      <div class="stat"><strong>${clean}</strong><span>Clean Sheets</span></div>
+    </div>
+    <h3>Match History</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Score</th><th>Result</th><th>Clean Sheet</th><th>Points</th></tr></thead>
+        <tbody>
+        ${rs.length ? rs.map(r=>{
+          const result=r.match_result || (r.player_score!=null&&r.opposition_score!=null ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw') : '-');
+          const cls=result.toLowerCase();
+          const score=(r.player_score==null||r.opposition_score==null)?'-':`${r.player_score} - ${r.opposition_score}`;
+          return `<tr><td>${r.match_date||''}</td><td>${score}</td><td class="result ${cls}">${result}</td><td>${r.clean_sheet?'✓':'—'}</td><td>${r.points??0}</td></tr>`;
+        }).join('') : '<tr><td colspan="5">No match records yet.</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+  profile.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function closeProfile(){
+  const p=document.getElementById('profile');
+  p.className='card profile';
+  p.innerHTML='';
+}
+
+function showPlayers(){
+  document.getElementById('leaderboard').className='card profile';
+  document.getElementById('players').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function showLeaderboard(){
+  buildLeaderboard();
+  document.getElementById('leaderboard').className='card profile show';
+  document.getElementById('leaderboard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function buildLeaderboard(){
+  const map={};
+  players.forEach(p=>map[p.id]={player:p,matches:0,wins:0,draws:0,losses:0,clean:0,points:0});
+  records.forEach(r=>{
+    if(!map[r.player_id])return;
+    const x=map[r.player_id];
+    x.matches++;
+    const result=r.match_result || (r.player_score!=null&&r.opposition_score!=null ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw') : '');
+    if(result==='Win')x.wins++;
+    if(result==='Draw')x.draws++;
+    if(result==='Loss')x.losses++;
+    if(r.clean_sheet)x.clean++;
+    x.points += Number(r.points||0);
+  });
+  const rows=Object.values(map).sort((a,b)=>b.points-a.points||b.wins-a.wins||b.clean-a.clean);
+  document.getElementById('leaderboardBody').innerHTML=rows.map((x,i)=>`
+    <tr><td>${i+1}</td><td><strong>${escapeHtml(x.player.Name||'')}</strong></td><td>${x.matches}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.clean}</td><td><strong>${x.points}</strong></td></tr>
+  `).join('');
+}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function escapeAttr(v){return escapeHtml(v);}
+load();
+</script>
+</body>
+</html>
