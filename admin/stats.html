@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Haveeru Kulhun League - Player Statistics</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    background: #111827;
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.header p {
+    margin: 7px 0 0;
+    color: #d1d5db;
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    background: rgba(255,255,255,0.12);
+    padding: 9px 13px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    background: rgba(255,255,255,0.22);
+}
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container {
+    max-width: 1100px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   PLAYER SELECT
+========================= */
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+select {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* =========================
+   PLAYER SUMMARY
+========================= */
+
+.player-name {
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.player-subtitle {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+.stat {
+    background: #f9fafb;
+    padding: 16px 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.points {
+    background: #eff6ff;
+}
+
+.points .stat-number {
+    color: #2563eb;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+th {
+    background: #1f2937;
+    color: white;
+    padding: 12px;
+    font-size: 13px;
+}
+
+td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+td:first-child {
+    text-align: left;
+}
+
+/* =========================
+   RESULT
+========================= */
+
+.result-win {
+    font-weight: bold;
+}
+
+.result-draw {
+    font-weight: bold;
+}
+
+.result-loss {
+    font-weight: bold;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 25px;
+}
+
+.loading {
+    text-align: center;
+    padding: 25px;
+    color: #6b7280;
+}
+
+.error {
+    color: #dc2626;
+    text-align: center;
+    padding: 25px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 800px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .player-name {
+        font-size: 21px;
+    }
+
+    .nav {
+        gap: 6px;
+    }
+
+    .nav a {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<div class="header">
+
+    <h1>
+        Haveeru Kulhun League
+    </h1>
+
+    <p>
+        Player Statistics
+    </p>
+
+
+    <div class="nav">
+
+        <a href="dashboard.html">
+            🏠 Dashboard
+        </a>
+
+        <a href="players.html">
+            👤 Players
+        </a>
+
+        <a href="daily-records.html">
+            ➕ Daily Records
+        </a>
+
+        <a href="stats.html">
+            📊 Statistics
+        </a>
+
+        <a href="leaderboard.html">
+            🏆 Leaderboard
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+
+<!-- =========================
+     PLAYER SELECT
+========================= -->
+
+<div class="card">
+
+    <label>
+        Select Player
+    </label>
+
+    <select
+        id="playerSelect"
+        onchange="loadPlayerStats()"
+    >
+
+        <option value="">
+            Select a player
+        </option>
+
+    </select>
+
+</div>
+
+
+<!-- =========================
+     PLAYER SUMMARY
+========================= -->
+
+<div
+    class="card"
+    id="summaryCard"
+    style="display:none;"
+>
+
+    <div
+        id="playerName"
+        class="player-name"
+    ></div>
+
+
+    <div
+        id="playerSubtitle"
+        class="player-subtitle"
+    ></div>
+
+
+    <div class="stats-grid">
+
+
+        <div class="stat">
+
+            <div
+                id="matches"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                MATCHES
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="wins"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                WINS
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="draws"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                DRAWS
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="losses"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                LOSSES
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="goalsFor"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                GOALS FOR
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="goalsAgainst"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                GOALS AGAINST
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="goalDifference"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                GOAL DIFFERENCE
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div
+                id="cleanSheets"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                CLEAN SHEETS
+            </div>
+
+        </div>
+
+
+        <div class="stat points">
+
+            <div
+                id="points"
+                class="stat-number"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                POINTS
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     MATCH HISTORY
+========================= -->
+
+<div
+    class="card"
+    id="historyCard"
+    style="display:none;"
+>
+
+    <h2>
+        Match History
+    </h2>
+
+    <div id="history"></div>
+
+</div>
+
+
+<div
+    id="loading"
+    class="loading"
+    style="display:none;"
+>
+    Loading...
+</div>
+
+
+<div
+    id="error"
+    class="error"
+    style="display:none;"
+></div>
+
+
+</div>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+    "https://yafowakgpjvzapmejptn.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_vOuJPPohicfbh8mFf-VQlA_jQ244rjs";
+
+
+/* =========================
+   LOAD PLAYERS
+========================= */
+
+async function loadPlayers() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${SUPABASE_URL}/rest/v1/Players?select=id,Name&order=Name.asc`,
+                {
+                    headers: {
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                await response.text()
+            );
+
+        }
+
+
+        const players =
+            await response.json();
+
+
+        const select =
+            document.getElementById(
+                "playerSelect"
+            );
+
+
+        players.forEach(player => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                player.id;
+
+
+            option.textContent =
+                player.Name;
+
+
+            select.appendChild(option);
+
+        });
+
+
+    } catch (error) {
+
+        showError(
+            "Error loading players: " +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================
+   LOAD PLAYER STATS
+========================= */
+
+async function loadPlayerStats() {
+
+    const playerId =
+        document.getElementById(
+            "playerSelect"
+        ).value;
+
+
+    if (!playerId) {
+
+        document.getElementById(
+            "summaryCard"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "historyCard"
+        ).style.display =
+            "none";
+
+
+        return;
+
+    }
+
+
+    showLoading(true);
+
+
+    try {
+
+        /* GET PLAYER */
+
+        const playerResponse =
+            await fetch(
+                `${SUPABASE_URL}/rest/v1/Players?id=eq.${playerId}&select=id,Name`,
+                {
+                    headers: {
+
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            `Bearer ${SUPABASE_KEY}`
+
+                    }
+                }
+            );
+
+
+        if (!playerResponse.ok) {
+
+            throw new Error(
+                await playerResponse.text()
+            );
+
+        }
+
+
+        const players =
+            await playerResponse.json();
+
+
+        if (players.length === 0) {
+
+            throw new Error(
+                "Player not found."
+            );
+
+        }
+
+
+        const player =
+            players[0];
+
+
+        /* GET MATCH RECORDS */
+
+        const recordsResponse =
+            await fetch(
+                `${SUPABASE_URL}/rest/v1/player_match_records?player_id=eq.${playerId}&select=*&order=match_date.desc`,
+                {
+                    headers: {
+
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            `Bearer ${SUPABASE_KEY}`
+
+                    }
+                }
+            );
+
+
+        if (!recordsResponse.ok) {
+
+            throw new Error(
+                await recordsResponse.text()
+            );
+
+        }
+
+
+        const records =
+            await recordsResponse.json();
+
+
+        /* =========================
+           CALCULATE STATS
+        ========================= */
+
+        let matches = 0;
+
+        let wins = 0;
+
+        let draws = 0;
+
+        let losses = 0;
+
+        let goalsFor = 0;
+
+        let goalsAgainst = 0;
+
+        let cleanSheets = 0;
+
+        let points = 0;
+
+
+        records.forEach(record => {
+
+            matches++;
+
+
+            /*
+             * If scores exist,
+             * use scores as the final result.
+             *
+             * Otherwise use the saved
+             * result selection.
+             */
+
+            const result =
+                record.match_result ||
+                record.result ||
+                "";
+
+
+            if (
+                record.player_score !== null &&
+                record.opposition_score !== null
+            ) {
+
+                const playerScore =
+                    Number(
+                        record.player_score
+                    );
+
+
+                const opponentScore =
+                    Number(
+                        record.opposition_score
+                    );
+
+
+                goalsFor +=
+                    playerScore;
+
+
+                goalsAgainst +=
+                    opponentScore;
+
+
+                if (
+                    playerScore >
+                    opponentScore
+                ) {
+
+                    wins++;
+
+                }
+
+                else if (
+                    playerScore ===
+                    opponentScore
+                ) {
+
+                    draws++;
+
+                }
+
+                else {
+
+                    losses++;
+
+                }
+
+
+                if (
+                    opponentScore === 0
+                ) {
+
+                    cleanSheets++;
+
+                }
+
+
+                points +=
+                    Number(
+                        record.points || 0
+                    );
+
+            }
+
+            else {
+
+                /*
+                 * Result selected but
+                 * score not entered yet.
+                 */
+
+                if (result === "Win") {
+
+                    wins++;
+
+                }
+
+                else if (result === "Draw") {
+
+                    draws++;
+
+                }
+
+                else if (result === "Loss") {
+
+                    losses++;
+
+                }
+
+            }
+
+        });
+
+
+        const goalDifference =
+            goalsFor -
+            goalsAgainst;
+
+
+        /* =========================
+           DISPLAY SUMMARY
+        ========================= */
+
+        document.getElementById(
+            "playerName"
+        ).innerText =
+            player.Name;
+
+
+        document.getElementById(
+            "playerSubtitle"
+        ).innerText =
+            "Individual League Statistics";
+
+
+        document.getElementById(
+            "matches"
+        ).innerText =
+            matches;
+
+
+        document.getElementById(
+            "wins"
+        ).innerText =
+            wins;
+
+
+        document.getElementById(
+            "draws"
+        ).innerText =
+            draws;
+
+
+        document.getElementById(
+            "losses"
+        ).innerText =
+            losses;
+
+
+        document.getElementById(
+            "goalsFor"
+        ).innerText =
+            goalsFor;
+
+
+        document.getElementById(
+            "goalsAgainst"
+        ).innerText =
+            goalsAgainst;
+
+
+        document.getElementById(
+            "goalDifference"
+        ).innerText =
+            goalDifference > 0
+                ? "+" + goalDifference
+                : goalDifference;
+
+
+        document.getElementById(
+            "cleanSheets"
+        ).innerText =
+            cleanSheets;
+
+
+        document.getElementById(
+            "points"
+        ).innerText =
+            points;
+
+
+        document.getElementById(
+            "summaryCard"
+        ).style.display =
+            "block";
+
+
+        /* =========================
+           MATCH HISTORY
+        ========================= */
+
+        displayHistory(records);
+
+
+    } catch (error) {
+
+        showError(
+            "Error loading statistics: " +
+            error.message
+        );
+
+    }
+
+
+    showLoading(false);
+
+}
+
+
+/* =========================
+   DISPLAY HISTORY
+========================= */
+
+function displayHistory(records) {
+
+    const history =
+        document.getElementById(
+            "history"
+        );
+
+
+    document.getElementById(
+        "historyCard"
+    ).style.display =
+        "block";
+
+
+    if (records.length === 0) {
+
+        history.innerHTML =
+            `<div class="empty">
+                No match records yet.
+            </div>`;
+
+        return;
+
+    }
+
+
+    let html = `
+
+        <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Date</th>
+
+                    <th>Score</th>
+
+                    <th>Result</th>
+
+                    <th>GD</th>
+
+                    <th>Clean Sheet</th>
+
+                    <th>Points</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+    `;
+
+
+    records.forEach(record => {
+
+        let score = "-";
+
+
+        /*
+         * Use saved result first,
+         * then generated result.
+         */
+
+        let result =
+            record.match_result ||
+            record.result ||
+            "-";
+
+
+        let gd = "-";
+
+
+        let cleanSheet = "-";
+
+
+        let recordPoints =
+            record.points ?? "-";
+
+
+        if (
+            record.player_score !== null &&
+            record.opposition_score !== null
+        ) {
+
+            const playerScore =
+                Number(
+                    record.player_score
+                );
+
+
+            const opponentScore =
+                Number(
+                    record.opposition_score
+                );
+
+
+            score =
+                playerScore +
+                " - " +
+                opponentScore;
+
+
+            gd =
+                playerScore -
+                opponentScore;
+
+
+            cleanSheet =
+                opponentScore === 0
+                    ? "Yes"
+                    : "No";
+
+        }
+
+
+        let resultClass = "";
+
+
+        if (result === "Win") {
+
+            resultClass =
+                "result-win";
+
+        }
+
+        else if (result === "Draw") {
+
+            resultClass =
+                "result-draw";
+
+        }
+
+        else if (result === "Loss") {
+
+            resultClass =
+                "result-loss";
+
+        }
+
+
+        html += `
+
+            <tr>
+
+                <td>
+                    ${formatDate(
+                        record.match_date
+                    )}
+                </td>
+
+                <td>
+                    ${score}
+                </td>
+
+                <td class="${resultClass}">
+                    ${result}
+                </td>
+
+                <td>
+                    ${gd}
+                </td>
+
+                <td>
+                    ${cleanSheet}
+                </td>
+
+                <td>
+                    ${recordPoints}
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+
+    html += `
+
+            </tbody>
+
+        </table>
+
+        </div>
+
+    `;
+
+
+    history.innerHTML =
+        html;
+
+}
+
+
+/* =========================
+   FORMAT DATE
+========================= */
+
+function formatDate(dateString) {
+
+    if (!dateString) {
+
+        return "-";
+
+    }
+
+
+    const date =
+        new Date(
+            dateString +
+            "T00:00:00"
+        );
+
+
+    return date.toLocaleDateString(
+        "en-GB"
+    );
+
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+function showLoading(show) {
+
+    document.getElementById(
+        "loading"
+    ).style.display =
+        show
+            ? "block"
+            : "none";
+
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+function showError(message) {
+
+    const error =
+        document.getElementById(
+            "error"
+        );
+
+
+    error.innerText =
+        message;
+
+
+    error.style.display =
+        "block";
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+loadPlayers();
+
+</script>
+
+</body>
+</html>

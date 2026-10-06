@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Haveeru Kulhun League - Leaderboard</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    background: #111827;
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.header p {
+    margin: 7px 0 0;
+    color: #d1d5db;
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    background: rgba(255,255,255,0.12);
+    padding: 9px 13px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    background: rgba(255,255,255,0.22);
+}
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container {
+    max-width: 1200px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+th {
+    background: #1f2937;
+    color: white;
+    padding: 13px 10px;
+    text-align: center;
+    font-size: 13px;
+}
+
+td {
+    padding: 13px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 14px;
+}
+
+tr:hover {
+    background: #f9fafb;
+}
+
+.player {
+    text-align: left;
+    font-weight: bold;
+}
+
+.rank {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.rank-1 {
+    font-size: 20px;
+}
+
+.rank-2 {
+    font-size: 19px;
+}
+
+.rank-3 {
+    font-size: 18px;
+}
+
+.points {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.positive {
+    font-weight: bold;
+}
+
+.negative {
+    font-weight: bold;
+}
+
+/* =========================
+   LOADING / ERROR
+========================= */
+
+.loading {
+    text-align: center;
+    padding: 30px;
+    color: #6b7280;
+}
+
+.error {
+    color: #dc2626;
+    text-align: center;
+    padding: 30px;
+}
+
+.legend {
+    margin-top: 15px;
+    color: #6b7280;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.7;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    .header h1 {
+        font-size: 23px;
+    }
+
+    .container {
+        margin-top: 15px;
+    }
+
+    .nav {
+        gap: 6px;
+    }
+
+    .nav a {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+}
+
+
+.staff-bar{margin-top:14px;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.staff-bar button{border:0;border-radius:7px;padding:7px 11px;font-weight:bold;cursor:pointer}
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<div class="header">
+
+    <h1>
+        Haveeru Kulhun League
+    </h1>
+
+    <p>
+        Individual Player Leaderboard
+    </p>
+
+
+    <div class="nav">
+
+        <a href="dashboard.html">
+            🏠 Dashboard
+        </a>
+
+        <a href="players.html">
+            👤 Players
+        </a>
+
+        <a href="daily-records.html">
+            ➕ Daily Records
+        </a>
+
+        <a href="stats.html">
+            📊 Statistics
+        </a>
+
+        <a href="leaderboard.html">
+            🏆 Leaderboard
+        </a>
+
+        <a href="staff.html" id="staffNav" style="display:none;">
+            👥 Staff
+        </a>
+
+    </div>
+
+    <div class="staff-bar">
+        <span id="staffEmail">Checking login...</span>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+</div>
+
+
+<div class="container">
+
+
+<!-- =========================
+     LEADERBOARD
+========================= -->
+
+<div class="card">
+
+    <div
+        id="loading"
+        class="loading"
+    >
+        Loading leaderboard...
+    </div>
+
+
+    <div class="table-wrapper">
+
+        <table
+            id="leaderboardTable"
+            style="display:none;"
+        >
+
+            <thead>
+
+                <tr>
+
+                    <th>Rank</th>
+
+                    <th>Player</th>
+
+                    <th>MP</th>
+
+                    <th>W</th>
+
+                    <th>D</th>
+
+                    <th>L</th>
+
+                    <th>GF</th>
+
+                    <th>GA</th>
+
+                    <th>GD</th>
+
+                    <th>CS</th>
+
+                    <th>PTS</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="leaderboardBody"
+            >
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     LEGEND
+========================= -->
+
+<div class="legend">
+
+    MP = Matches &nbsp; | &nbsp;
+
+    W = Wins &nbsp; | &nbsp;
+
+    D = Draws &nbsp; | &nbsp;
+
+    L = Losses &nbsp; | &nbsp;
+
+    GF = Goals For &nbsp; | &nbsp;
+
+    GA = Goals Against &nbsp; | &nbsp;
+
+    GD = Goal Difference &nbsp; | &nbsp;
+
+    CS = Clean Sheets &nbsp; | &nbsp;
+
+    PTS = Points
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+    "https://yafowakgpjvzapmejptn.supabase.co";
+
+const SUPABASE_KEY =
+    "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+
+
+/* =========================
+   LOGIN / SESSION
+========================= */
+
+function getAccessToken() {
+    return localStorage.getItem("haveeru_access_token") || "";
+}
+
+function getStoredUser() {
+    try {
+        return JSON.parse(localStorage.getItem("haveeru_user") || "null");
+    } catch (e) {
+        return null;
+    }
+}
+
+
+
+/* =========================
+   ADMIN STAFF NAVIGATION
+========================= */
+
+async function checkAdminRole() {
+
+    const token = getAccessToken();
+    if (!token) return false;
+
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/functions/v1/staff-management`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ action: "list" })
+            }
+        );
+
+        if (!response.ok) return false;
+
+        const staffNav = document.getElementById("staffNav");
+        if (staffNav) staffNav.style.display = "inline-block";
+
+        return true;
+
+    } catch (error) {
+        return false;
+    }
+}
+
+
+async function checkLogin() {
+    const token = getAccessToken();
+
+    if (!token) {
+        window.location.href = "login.html";
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Session expired");
+        }
+
+        const user = await response.json();
+        localStorage.setItem("haveeru_user", JSON.stringify(user));
+        document.getElementById("staffEmail").textContent = user.email || "Staff";
+        return true;
+    } catch (error) {
+        localStorage.removeItem("haveeru_access_token");
+        localStorage.removeItem("haveeru_refresh_token");
+        localStorage.removeItem("haveeru_user");
+        window.location.href = "login.html";
+        return false;
+    }
+}
+
+async function logout() {
+    const token = getAccessToken();
+
+    try {
+        if (token) {
+            await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+        }
+    } catch (error) {}
+
+    localStorage.removeItem("haveeru_access_token");
+    localStorage.removeItem("haveeru_refresh_token");
+    localStorage.removeItem("haveeru_user");
+    window.location.href = "login.html";
+}
+
+/* =========================
+   LOAD LEADERBOARD
+========================= */
+
+async function loadLeaderboard() {
+
+    const loading =
+        document.getElementById(
+            "loading"
+        );
+
+
+    const table =
+        document.getElementById(
+            "leaderboardTable"
+        );
+
+
+    const body =
+        document.getElementById(
+            "leaderboardBody"
+        );
+
+
+    try {
+
+
+        /* =========================
+           GET PLAYERS
+        ========================= */
+
+        const playersResponse =
+            await fetch(
+                `${SUPABASE_URL}/rest/v1/Players?select=id,Name&order=Name.asc`,
+                {
+                    headers: {
+
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            `Bearer ${getAccessToken()}`
+
+                    }
+                }
+            );
+
+
+        if (!playersResponse.ok) {
+
+            throw new Error(
+                await playersResponse.text()
+            );
+
+        }
+
+
+        const players =
+            await playersResponse.json();
+
+
+        /* =========================
+           GET MATCH RECORDS
+        ========================= */
+
+        const recordsResponse =
+            await fetch(
+                `${SUPABASE_URL}/rest/v1/player_match_records?select=*`,
+                {
+                    headers: {
+
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            `Bearer ${getAccessToken()}`
+
+                    }
+                }
+            );
+
+
+        if (!recordsResponse.ok) {
+
+            throw new Error(
+                await recordsResponse.text()
+            );
+
+        }
+
+
+        const records =
+            await recordsResponse.json();
+
+
+        /* =========================
+           CREATE PLAYER STATISTICS
+        ========================= */
+
+        const stats = {};
+
+
+        players.forEach(player => {
+
+            stats[player.id] = {
+
+                id:
+                    player.id,
+
+                name:
+                    player.Name ||
+                    "Unknown",
+
+                matches: 0,
+
+                wins: 0,
+
+                draws: 0,
+
+                losses: 0,
+
+                goalsFor: 0,
+
+                goalsAgainst: 0,
+
+                goalDifference: 0,
+
+                cleanSheets: 0,
+
+                points: 0
+
+            };
+
+        });
+
+
+        /* =========================
+           ADD MATCH RECORDS
+        ========================= */
+
+        records.forEach(record => {
+
+            const player =
+                stats[record.player_id];
+
+
+            if (!player) {
+
+                return;
+
+            }
+
+
+            player.matches++;
+
+
+            /*
+             * Result entered before score
+             * is stored in match_result.
+             *
+             * Once a score exists,
+             * the score determines
+             * the final result.
+             */
+
+            let result =
+                record.match_result ||
+                record.result ||
+                "";
+
+
+            /* =========================
+               NO SCORE YET
+            ========================= */
+
+            if (
+                record.player_score === null ||
+                record.opposition_score === null
+            ) {
+
+                if (result === "Win") {
+
+                    player.wins++;
+
+                }
+
+                else if (result === "Draw") {
+
+                    player.draws++;
+
+                }
+
+                else if (result === "Loss") {
+
+                    player.losses++;
+
+                }
+
+
+                return;
+
+            }
+
+
+            /* =========================
+               SCORE EXISTS
+            ========================= */
+
+            const playerScore =
+                Number(
+                    record.player_score
+                );
+
+
+            const opponentScore =
+                Number(
+                    record.opposition_score
+                );
+
+
+            player.goalsFor +=
+                playerScore;
+
+
+            player.goalsAgainst +=
+                opponentScore;
+
+
+            /* =========================
+               RESULT
+            ========================= */
+
+            if (
+                playerScore >
+                opponentScore
+            ) {
+
+                player.wins++;
+
+            }
+
+            else if (
+                playerScore ===
+                opponentScore
+            ) {
+
+                player.draws++;
+
+            }
+
+            else {
+
+                player.losses++;
+
+            }
+
+
+            /* =========================
+               CLEAN SHEET
+            ========================= */
+
+            /*
+             * A clean sheet happens
+             * automatically when the
+             * opponent score is 0.
+             */
+
+            if (
+                opponentScore === 0
+            ) {
+
+                player.cleanSheets++;
+
+            }
+
+
+            /* =========================
+               POINTS
+            ========================= */
+
+            let matchPoints = 0;
+
+
+            /*
+             * WIN = 3
+             * DRAW = 1
+             * LOSS = 0
+             */
+
+            if (
+                playerScore >
+                opponentScore
+            ) {
+
+                matchPoints = 3;
+
+            }
+
+            else if (
+                playerScore ===
+                opponentScore
+            ) {
+
+                matchPoints = 1;
+
+            }
+
+
+            /*
+             * CLEAN SHEET BONUS = +1
+             *
+             * Because clean sheet is
+             * opponent score = 0,
+             * this correctly gives:
+             *
+             * Win 5-0 = 4
+             * Win 5-2 = 3
+             * Draw 0-0 = 2
+             * Draw 2-2 = 1
+             * Loss = 0
+             */
+
+            if (
+                opponentScore === 0
+            ) {
+
+                matchPoints++;
+
+            }
+
+
+            player.points +=
+                matchPoints;
+
+
+            /* =========================
+               GOAL DIFFERENCE
+            ========================= */
+
+            player.goalDifference =
+                player.goalsFor -
+                player.goalsAgainst;
+
+        });
+
+
+        /* =========================
+           CALCULATE GD
+        ========================= */
+
+        Object.values(stats).forEach(
+            player => {
+
+                player.goalDifference =
+                    player.goalsFor -
+                    player.goalsAgainst;
+
+            }
+        );
+
+
+        /* =========================
+           SORT LEADERBOARD
+        ========================= */
+
+        const leaderboard =
+            Object.values(stats).sort(
+                (a, b) => {
+
+
+                    /*
+                     * 1. POINTS
+                     */
+
+                    if (
+                        b.points !==
+                        a.points
+                    ) {
+
+                        return (
+                            b.points -
+                            a.points
+                        );
+
+                    }
+
+
+                    /*
+                     * 2. GOAL DIFFERENCE
+                     */
+
+                    if (
+                        b.goalDifference !==
+                        a.goalDifference
+                    ) {
+
+                        return (
+                            b.goalDifference -
+                            a.goalDifference
+                        );
+
+                    }
+
+
+                    /*
+                     * 3. GOALS FOR
+                     */
+
+                    if (
+                        b.goalsFor !==
+                        a.goalsFor
+                    ) {
+
+                        return (
+                            b.goalsFor -
+                            a.goalsFor
+                        );
+
+                    }
+
+
+                    /*
+                     * 4. NAME
+                     */
+
+                    return a.name.localeCompare(
+                        b.name
+                    );
+
+                }
+            );
+
+
+        /* =========================
+           DISPLAY
+        ========================= */
+
+        body.innerHTML = "";
+
+
+        leaderboard.forEach(
+            (player, index) => {
+
+                const rank =
+                    index + 1;
+
+
+                let rankClass = "";
+
+
+                if (rank === 1) {
+
+                    rankClass =
+                        "rank-1";
+
+                }
+
+                else if (rank === 2) {
+
+                    rankClass =
+                        "rank-2";
+
+                }
+
+                else if (rank === 3) {
+
+                    rankClass =
+                        "rank-3";
+
+                }
+
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td
+                        class="rank ${rankClass}"
+                    >
+                        ${rank}
+                    </td>
+
+
+                    <td class="player">
+                        ${escapeHtml(
+                            player.name
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${player.matches}
+                    </td>
+
+
+                    <td>
+                        ${player.wins}
+                    </td>
+
+
+                    <td>
+                        ${player.draws}
+                    </td>
+
+
+                    <td>
+                        ${player.losses}
+                    </td>
+
+
+                    <td>
+                        ${player.goalsFor}
+                    </td>
+
+
+                    <td>
+                        ${player.goalsAgainst}
+                    </td>
+
+
+                    <td class="${
+                        player.goalDifference >= 0
+                            ? "positive"
+                            : "negative"
+                    }">
+
+                        ${
+                            player.goalDifference > 0
+                                ? "+" +
+                                  player.goalDifference
+                                : player.goalDifference
+                        }
+
+                    </td>
+
+
+                    <td>
+                        ${player.cleanSheets}
+                    </td>
+
+
+                    <td class="points">
+                        ${player.points}
+                    </td>
+
+                `;
+
+
+                body.appendChild(row);
+
+            }
+        );
+
+
+        loading.style.display =
+            "none";
+
+
+        table.style.display =
+            "table";
+
+
+    } catch (error) {
+
+        loading.className =
+            "error";
+
+
+        loading.innerHTML =
+            "Error loading leaderboard:<br><br>" +
+            escapeHtml(
+                error.message
+            );
+
+    }
+
+}
+
+
+/* =========================
+   HTML SECURITY
+========================= */
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+checkLogin().then(async isLoggedIn => {
+    if (!isLoggedIn) return;
+    await checkAdminRole();
+    loadLeaderboard();
+});
+
+</script>
+
+
+</body>
+
+</html>
