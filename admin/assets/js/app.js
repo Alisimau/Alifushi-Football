@@ -1,301 +1,247 @@
-let players=[];
-let records=[];
-let editingPlayerId=null;
+/* HAVEERU KULHUN ADMIN - ONE APP.JS */
+let players = [];
+let records = [];
+let editingPlayerId = null;
 
-const $=id=>document.getElementById(id);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function esc(s){
- return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function msg(id, text, type='info') {
+  const e = $(id); if (!e) return;
+  e.textContent = text; e.className = 'message show ' + type;
 }
 
-function note(id,text,type='info'){
- const e=$(id); if(!e)return;
- e.className='message show '+type;
- e.textContent=text;
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const e = $(view); if (e) e.classList.add('active');
+  document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  if (view === 'dashboard') loadDashboard();
+  if (view === 'records') { loadPlayers(); loadDailyRecords(); loadHistory(); }
+  if (view === 'players') renderPlayers();
+  if (view === 'stats' || view === 'leaderboard') loadStats();
+  if (view === 'staff') loadStaff();
 }
 
-function showView(v){
- document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
- const view=$(v); if(view)view.classList.add('active');
- document.querySelectorAll('.nav button[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
- if(v==='dashboard')loadDashboard();
- if(v==='records'){loadPlayers();loadExistingRecords();loadHistory();}
- if(v==='players')renderPlayers();
- if(v==='stats'||v==='leaderboard')loadStats();
- if(v==='staff')loadStaff();
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => showView(b.dataset.view));
+
+/* ---------- DAILY RECORDS: SIMPLE VERSION ---------- */
+function buildDailyRecordsUI() {
+  const section = $('records');
+  if (!section) return;
+  section.innerHTML = `
+    <div class="hero"><h1>Daily Records</h1><p>Select players one by one, save their result, then enter the match score.</p></div>
+    <div class="card">
+      <label>Date</label>
+      <input type="date" id="matchDate" onchange="loadDailyRecords()">
+    </div>
+    <div class="card">
+      <h2>Player Result</h2>
+      <div class="info">Select a player, choose Win, Draw or Loss, then save. Repeat for every player you need.</div>
+      <div class="form-grid">
+        <div class="field"><label>Select Player</label><select id="recordPlayer"><option value="">Select player</option></select></div>
+        <div class="field"><label>Result</label><select id="recordResult"><option value="Win">🟢 Win</option><option value="Draw">🟡 Draw</option><option value="Loss">🔴 Loss</option></select></div>
+      </div>
+      <button class="btn" style="width:100%;margin-top:16px" onclick="savePlayerResult()">💾 Save Player Result</button>
+      <div id="recordMessage" class="message"></div>
+    </div>
+    <div class="card">
+      <h2>Players Recorded For This Date</h2>
+      <div class="table-wrap"><table><thead><tr><th>Player</th><th>Result</th><th>Score</th><th>Points</th><th>Action</th></tr></thead><tbody id="dailyPlayersBody"><tr><td colspan="5" class="empty">No players recorded yet.</td></tr></tbody></table></div>
+    </div>
+    <div class="card" id="scoreCard" style="display:none">
+      <h2>Enter Daily Score</h2>
+      <div class="info">Enter the match score once. It will be applied to all players recorded for this date.</div>
+      <div class="form-grid">
+        <div class="field"><label>Winning Score</label><input type="number" id="winningScore" min="0" placeholder="Example: 5"></div>
+        <div class="field"><label>Losing Score</label><input type="number" id="losingScore" min="0" placeholder="Example: 2"></div>
+        <div class="field"><label>Draw Score</label><input type="number" id="drawScore" min="0" placeholder="Only for Draw"></div>
+      </div>
+      <button class="btn" style="width:100%;margin-top:16px;background:#16a34a" onclick="applyDailyScore()">📊 Apply Score To All Players</button>
+      <div id="scoreMessage" class="message"></div>
+    </div>
+    <div class="card">
+      <div class="actions" style="justify-content:space-between"><h2 style="margin:0">Record History</h2><button class="btn secondary" onclick="loadHistory()">🔄 Refresh</button></div>
+      <br><div class="table-wrap"><table><thead><tr><th>Date</th><th>Player</th><th>Result</th><th>Score</th><th>Clean Sheet</th><th>Points</th><th>Actions</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+    </div>`;
 }
 
-document.querySelectorAll('.nav button[data-view]').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+function resultOf(r) { return r?.match_result || r?.result || ''; }
+function playerName(id) { return players.find(p => Number(p.id) === Number(id))?.Name || ('Player #' + id); }
 
-async function loadPlayers(){
- try{
-  const r=await api('/rest/v1/Players?select=id,Name,"Nick Name",Phone,Photo_url&order=Name.asc');
-  players=Array.isArray(r)?r:[];
-  renderPlayers();
-  populateRecordPlayerSelect();
-  renderRecordPlayers(records);
- }catch(e){console.error(e);note('playerMsg',e.message,'error')}
+async function loadDailyRecords() {
+  const date = $('matchDate')?.value;
+  if (!date) return;
+  try {
+    const data = await api('/rest/v1/player_match_records?match_date=eq.' + encodeURIComponent(date) + '&select=*&order=id.asc');
+    records = Array.isArray(data) ? data : [];
+    renderDailyPlayers();
+    showScoreCard();
+  } catch (e) { msg('recordMessage', e.message, 'error'); }
 }
 
-function renderPlayers(){
- const body=$('playersBody');if(!body)return;
- const q=($('playerSearch')?.value||'').toLowerCase();
- const list=players.filter(p=>(p.Name||'').toLowerCase().includes(q)||(p['Nick Name']||'').toLowerCase().includes(q));
- body.innerHTML=list.length?list.map(p=>`
- <tr><td>${esc(p.Name)}</td><td>${esc(p['Nick Name'])}</td><td>${esc(p.Phone)}</td><td>
- <button class="btn secondary" onclick="editPlayer(${p.id})">✏️ Edit</button>
- <button class="btn danger" onclick="deletePlayer(${p.id})">🗑️ Delete</button>
- </td></tr>`).join(''):'<tr><td colspan="4" class="empty">No players found.</td></tr>';
+async function loadPlayers() {
+  try {
+    const data = await api('/rest/v1/Players?select=id,Name,"Nick Name",Phone,Photo_url&order=Name.asc');
+    players = Array.isArray(data) ? data : [];
+    renderPlayers();
+    fillRecordPlayer();
+    renderDailyPlayers();
+  } catch (e) { console.error(e); }
 }
 
-function editPlayer(id){
- const p=players.find(x=>x.id==id);if(!p)return;
- editingPlayerId=id;
- $('pName').value=p.Name||'';
- $('pNick').value=p['Nick Name']||'';
- $('pPhone').value=p.Phone||'';
- $('pPhoto').value=p.Photo_url||'';
- showView('players');
- scrollTo(0,0);
+function fillRecordPlayer() {
+  const s = $('recordPlayer'); if (!s) return;
+  const current = s.value;
+  const used = new Set(records.map(r => String(r.player_id)));
+  s.innerHTML = '<option value="">Select player</option>' + players.map(p => `<option value="${p.id}" ${used.has(String(p.id)) ? 'disabled' : ''}>${esc(p.Name)}</option>`).join('');
+  if (current && !used.has(current)) s.value = current;
 }
 
-async function savePlayer(){
- const body={Name:$('pName').value.trim(),'Nick Name':$('pNick').value.trim(),Phone:$('pPhone').value.trim(),Photo_url:$('pPhoto').value.trim()||null};
- if(!body.Name){note('playerMsg','Enter player name.','error');return}
- try{
-  if(editingPlayerId)await api('/rest/v1/Players?id=eq.'+editingPlayerId,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
-  else await api('/rest/v1/Players',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
-  note('playerMsg',editingPlayerId?'Player updated.':'Player added.','success');
-  clearPlayerForm();await loadPlayers();await loadDashboard();
- }catch(e){note('playerMsg',e.message,'error')}
-}
-
-async function deletePlayer(id){
- if(!confirm('Delete this player and their records?'))return;
- try{await api('/rest/v1/Players?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}});await loadPlayers();await loadDashboard();await loadStats();}
- catch(e){note('playerMsg',e.message,'error')}
-}
-
-function clearPlayerForm(){editingPlayerId=null;['pName','pNick','pPhone','pPhoto'].forEach(x=>{if($(x))$(x).value=''})}
-
-/* ===== DAILY RECORDS: select players individually ===== */
-
-function getResult(r){
- return r?.match_result||r?.result||'';
-}
-
-function populateRecordPlayerSelect(){
- const sel=$('recordPlayer');if(!sel)return;
- const current=sel.value;
- sel.innerHTML='<option value="">Select player</option>'+players.map(p=>`<option value="${p.id}">${esc(p.Name||'Unknown')}${p['Nick Name']?' ('+esc(p['Nick Name'])+')':''}</option>`).join('');
- if(players.some(p=>String(p.id)===String(current)))sel.value=current;
-}
-
-function renderRecordPlayers(existing=[]){
- const list=$('playersList');if(!list)return;
- if(!existing.length){list.innerHTML='<div class="empty">No players selected for this date yet.</div>';return}
- list.innerHTML=existing.map(r=>{
-  const p=players.find(x=>Number(x.id)===Number(r.player_id));
-  return `<div class="selected-player-row">
-   <div><div class="record-player-name">${esc(p?.Name||'Unknown')}</div><span class="small muted">${esc(getResult(r))}${r.player_score!=null?' • '+r.player_score+' - '+r.opposition_score:''}</span></div>
-   <div class="actions">
-    <button class="btn secondary" onclick="editSelectedPlayer(${r.id})">✏️ Edit</button>
-    <button class="btn danger" onclick="deleteHistoryRecord(${r.id})">🗑️ Remove</button>
-   </div>
-  </div>`;
- }).join('');
- updateScoreBoxes();
-}
-
-async function loadExistingRecords(){
- const date=$('matchDate')?.value;if(!date)return;
- try{
-  const r=await api('/rest/v1/player_match_records?match_date=eq.'+encodeURIComponent(date)+'&select=*&order=id.asc');
-  records=Array.isArray(r)?r:[];
-  renderRecordPlayers(records);
-  restoreScores(records);
- }catch(e){console.error(e);note('message',e.message,'error')}
-}
-
-function restoreScores(rs){
- const scored=rs.find(r=>r.player_score!==null&&r.opposition_score!==null);
- if(!scored)return;
- const a=Number(scored.player_score),b=Number(scored.opposition_score);
- if(a===b){$('drawScore').value=a}
- else{$('winningScore').value=Math.max(a,b);$('losingScore').value=Math.min(a,b)}
-}
-
-function updateScoreBoxes(){
- const result=$('recordResult')?.value||'';
- $('winLossBox').style.display=(result==='Win'||result==='Loss')?'block':'none';
- $('drawBox').style.display=result==='Draw'?'block':'none';
- $('scoreSection').style.display=result?'block':'none';
-}
-
-async function saveDailyRecord(){
- const date=$('matchDate').value;
- const pid=$('recordPlayer').value;
- const result=$('recordResult').value;
- if(!date){note('message','Please select a date.','error');return}
- if(!pid){note('message','Please select a player.','error');return}
- if(!result){note('message','Please select Win, Draw or Loss.','error');return}
- try{
-  const existing=records.find(r=>Number(r.player_id)===Number(pid));
-  const body={match_date:date,player_id:Number(pid),match_result:result};
-  if(existing){
-   await api('/rest/v1/player_match_records?id=eq.'+existing.id,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
-  }else{
-   await api('/rest/v1/player_match_records',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
+function renderDailyPlayers() {
+  const body = $('dailyPlayersBody'); if (!body) return;
+  if (!records.length) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">No players recorded yet.</td></tr>';
+    $('scoreCard').style.display = 'none';
+    fillRecordPlayer();
+    return;
   }
-  note('message', 'Player result saved. Select another player to add another result.','success');
-  $('recordPlayer').value='';
-  $('recordResult').value='';
-  await loadExistingRecords();
-  await loadHistory();
- }catch(e){console.error(e);note('message',e.message,'error')}
+  body.innerHTML = records.map(r => `<tr>
+    <td>${esc(playerName(r.player_id))}</td>
+    <td>${esc(resultOf(r))}</td>
+    <td>${r.player_score == null ? '-' : r.player_score + ' - ' + r.opposition_score}</td>
+    <td><b>${r.points ?? 0}</b></td>
+    <td><button class="btn secondary" onclick="editDailyRecord(${r.id})">✏️ Edit</button> <button class="btn danger" onclick="deleteDailyRecord(${r.id})">🗑️ Delete</button></td>
+  </tr>`).join('');
+  fillRecordPlayer();
+  showScoreCard();
 }
 
-async function editSelectedPlayer(id){
- const r=records.find(x=>Number(x.id)===Number(id));if(!r)return;
- $('recordPlayer').value=String(r.player_id);
- $('recordResult').value=getResult(r);
- updateScoreBoxes();
- document.querySelector('#records .card')?.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-async function applyDailyScore(){
- const date=$('matchDate').value;if(!date){note('scoreMessage','Please select a date.','error');return}
- const rs=await api('/rest/v1/player_match_records?match_date=eq.'+encodeURIComponent(date)+'&select=*');
- if(!Array.isArray(rs)||!rs.length){note('scoreMessage','No player records found for this date. Add players first.','error');return}
- const results=[...new Set(rs.map(getResult).filter(Boolean))];
- const hasWin=results.includes('Win'),hasLoss=results.includes('Loss'),hasDraw=results.includes('Draw');
- const win=$('winningScore').value,loss=$('losingScore').value,draw=$('drawScore').value;
- if((hasWin||hasLoss)&&(win===''||loss==='')){note('scoreMessage','Please enter the winning and losing scores.','error');return}
- if((hasWin||hasLoss)&&Number(win)<=Number(loss)){note('scoreMessage','Winning score must be greater than losing score.','error');return}
- if(hasDraw&&draw===''){note('scoreMessage','Please enter the draw score.','error');return}
- try{
-  for(const r of rs){
-   const result=getResult(r);let ps=null,os=null;
-   if(result==='Win'){ps=Number(win);os=Number(loss)}
-   else if(result==='Loss'){ps=Number(loss);os=Number(win)}
-   else if(result==='Draw'){ps=Number(draw);os=Number(draw)}
-   else continue;
-   const clean=os===0&&ps>=os;
-   await api('/rest/v1/player_match_records?id=eq.'+r.id,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({player_score:ps,opposition_score:os,clean_sheet:clean,match_result:result})});
+function showScoreCard() {
+  const card = $('scoreCard'); if (!card) return;
+  card.style.display = records.length ? 'block' : 'none';
+  const win = records.some(r => resultOf(r) === 'Win');
+  const loss = records.some(r => resultOf(r) === 'Loss');
+  const draw = records.some(r => resultOf(r) === 'Draw');
+  if (!records.some(r => r.player_score != null)) return;
+  const scored = records.find(r => r.player_score != null);
+  if (scored) {
+    if (Number(scored.player_score) === Number(scored.opposition_score)) $('drawScore').value = scored.player_score;
+    else { $('winningScore').value = Math.max(scored.player_score, scored.opposition_score); $('losingScore').value = Math.min(scored.player_score, scored.opposition_score); }
   }
-  note('scoreMessage','Daily score applied successfully.','success');
-  await loadExistingRecords();await loadHistory();await loadDashboard();await loadStats();
- }catch(e){console.error(e);note('scoreMessage',e.message,'error')}
 }
 
-/* ===== HISTORY ===== */
-
-async function loadHistory(){const date=$('matchDate')?.value;if(!date)return;try{const r=await api('/rest/v1/player_match_records?match_date=eq.'+encodeURIComponent(date)+'&select=*&order=id.desc');records=Array.isArray(r)?r:[];renderHistory(records)}catch(e){note('message',e.message,'error')}}
-async function loadAllHistory(){try{const r=await api('/rest/v1/player_match_records?select=*&order=match_date.desc,id.desc');records=Array.isArray(r)?r:[];renderHistory(records)}catch(e){note('message',e.message,'error')}}
-
-function pname(id){return players.find(p=>Number(p.id)===Number(id))?.Name||('Player #'+id)}
-
-function renderHistory(rs){
- const body=$('recordsBody');if(!body)return;
- body.innerHTML=rs.length?rs.map(r=>`
- <tr><td>${esc(r.match_date)}</td><td>${esc(pname(r.player_id))}</td>
- <td>${esc(getResult(r)||'-')}</td>
- <td>${r.player_score==null?'-':r.player_score+' - '+r.opposition_score}</td>
- <td>${r.clean_sheet?'Yes':'No'}</td><td><b>${r.points??0}</b></td>
- <td><button class="btn secondary" onclick="editHistoryRecord(${r.id})">✏️ Edit</button>
- <button class="btn danger" onclick="deleteHistoryRecord(${r.id})">🗑️ Delete</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty">No records found.</td></tr>';
+async function savePlayerResult() {
+  const date = $('matchDate').value, pid = $('recordPlayer').value, result = $('recordResult').value;
+  if (!date) return msg('recordMessage', 'Please select a date.', 'error');
+  if (!pid) return msg('recordMessage', 'Please select a player.', 'error');
+  try {
+    const existing = records.find(r => Number(r.player_id) === Number(pid));
+    const body = { match_date: date, player_id: Number(pid), match_result: result, player_score: null, opposition_score: null, clean_sheet: false };
+    if (existing) await api('/rest/v1/player_match_records?id=eq.' + existing.id, { method:'PATCH', headers:{'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify(body) });
+    else await api('/rest/v1/player_match_records', { method:'POST', headers:{'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify(body) });
+    msg('recordMessage', playerName(pid) + ' — ' + result + ' saved. Select the next player.', 'success');
+    await loadDailyRecords(); await loadHistory();
+  } catch (e) { msg('recordMessage', e.message, 'error'); }
 }
 
-async function editHistoryRecord(id){
- const r=records.find(x=>Number(x.id)===Number(id));if(!r)return;
- const newResult=prompt('Result (Win, Draw or Loss):',getResult(r));if(!newResult)return;
- const result=newResult.trim().replace(/^./,c=>c.toUpperCase());
- if(!['Win','Draw','Loss'].includes(result)){alert('Use Win, Draw or Loss.');return}
- const currentPS=r.player_score==null?'':r.player_score,currentOS=r.opposition_score==null?'':r.opposition_score;
- const ps=prompt('Player score (leave blank to keep score empty):',currentPS);
- if(ps===null)return;
- const os=prompt('Opponent score (leave blank to keep score empty):',currentOS);
- if(os===null)return;
- const p=ps===''?null:Number(ps),o=os===''?null:Number(os);
- if(p!==null&&(!Number.isInteger(p)||p<0)||o!==null&&(!Number.isInteger(o)||o<0)){alert('Scores must be whole numbers.');return}
- if(p!==null&&o!==null){
-  if(result==='Win'&&p<=o){alert('For Win, player score must be greater.');return}
-  if(result==='Loss'&&p>=o){alert('For Loss, player score must be lower.');return}
-  if(result==='Draw'&&p!==o){alert('For Draw, scores must be equal.');return}
- }
- const clean=p!==null&&o===0&&p>=o;
- try{await api('/rest/v1/player_match_records?id=eq.'+id,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({match_result:result,player_score:p,opposition_score:o,clean_sheet:clean})});await loadHistory();await loadExistingRecords();await loadDashboard();await loadStats();note('message','Record updated successfully.','success')}catch(e){note('message',e.message,'error')}
+async function applyDailyScore() {
+  if (!records.length) return msg('scoreMessage', 'Save at least one player result first.', 'error');
+  const hasWL = records.some(r => resultOf(r) === 'Win' || resultOf(r) === 'Loss');
+  const hasDraw = records.some(r => resultOf(r) === 'Draw');
+  const ws = $('winningScore').value, ls = $('losingScore').value, ds = $('drawScore').value;
+  if (hasWL && (ws === '' || ls === '')) return msg('scoreMessage', 'Enter the winning score and losing score.', 'error');
+  if (hasWL && Number(ws) <= Number(ls)) return msg('scoreMessage', 'Winning score must be greater than losing score.', 'error');
+  if (hasDraw && ds === '') return msg('scoreMessage', 'Enter the draw score.', 'error');
+  try {
+    for (const r of records) {
+      const res = resultOf(r); let ps, os;
+      if (res === 'Win') { ps = Number(ws); os = Number(ls); }
+      else if (res === 'Loss') { ps = Number(ls); os = Number(ws); }
+      else if (res === 'Draw') { ps = Number(ds); os = Number(ds); }
+      else continue;
+      await api('/rest/v1/player_match_records?id=eq.' + r.id, { method:'PATCH', headers:{'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify({player_score:ps,opposition_score:os,clean_sheet:os===0&&ps>=os,match_result:res}) });
+    }
+    msg('scoreMessage', 'Score applied successfully to all recorded players.', 'success');
+    await loadDailyRecords(); await loadHistory(); await loadStats(); await loadDashboard();
+  } catch (e) { msg('scoreMessage', e.message, 'error'); }
 }
 
-async function deleteHistoryRecord(id){
- if(!confirm('Delete this record?'))return;
- try{await api('/rest/v1/player_match_records?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}});await loadHistory();await loadExistingRecords();await loadDashboard();await loadStats();note('message','Record deleted successfully.','success')}catch(e){note('message',e.message,'error')}
+async function editDailyRecord(id) {
+  const r = records.find(x => Number(x.id) === Number(id)); if (!r) return;
+  $('recordPlayer').value = String(r.player_id);
+  $('recordPlayer').disabled = true;
+  $('recordResult').value = resultOf(r);
+  const btn = document.querySelector('#records button[onclick="savePlayerResult()"]');
+  if (btn) { btn.textContent = '💾 Update Player Result'; btn.onclick = () => updateEditedRecord(id); }
+  msg('recordMessage', 'Editing ' + playerName(r.player_id) + '. Change the result and save.', 'info');
 }
 
-/* ===== STATS ===== */
-
-async function aggregate(){
- const rs=await api('/rest/v1/player_match_records?select=*');
- const map=new Map(players.map(p=>[p.id,{player:p,played:0,wins:0,draws:0,losses:0,points:0,clean:0,gd:0}]));
- for(const r of rs){
-  const x=map.get(r.player_id);if(!x)continue;
-  x.played++;
-  const res=getResult(r);
-  if(res==='Win')x.wins++;else if(res==='Draw')x.draws++;else if(res==='Loss')x.losses++;
-  x.points+=Number(r.points||0);if(r.clean_sheet)x.clean++;x.gd+=Number(r.goal_difference||0);
- }
- return [...map.values()];
+async function updateEditedRecord(id) {
+  const result = $('recordResult').value;
+  try {
+    await api('/rest/v1/player_match_records?id=eq.' + id, {method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({match_result:result,player_score:null,opposition_score:null,clean_sheet:false})});
+    $('recordPlayer').disabled = false;
+    const btn = document.querySelector('#records button[onclick="updateEditedRecord(' + id + ')"]');
+    if (btn) { btn.textContent='💾 Save Player Result'; btn.onclick=savePlayerResult; }
+    await loadDailyRecords(); await loadHistory(); msg('recordMessage','Updated successfully.','success');
+  } catch(e) { msg('recordMessage',e.message,'error'); }
 }
 
-async function loadStats(){
- try{
-  const a=await aggregate();
-  a.sort((x,y)=>y.points-x.points||y.gd-x.gd||y.wins-x.wins||x.player.Name.localeCompare(y.player.Name));
-  if($('statsBody'))$('statsBody').innerHTML=a.map(x=>`<tr><td>${esc(x.player.Name)}</td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td><b>${x.points}</b></td><td>${x.clean}</td><td>${x.gd}</td></tr>`).join('');
-  if($('leaderBody'))$('leaderBody').innerHTML=a.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.player.Name)}</td><td><b>${x.points}</b></td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.gd}</td><td>${x.clean}</td></tr>`).join('');
- }catch(e){console.error(e)}
+async function deleteDailyRecord(id) {
+  if (!confirm('Delete this player record?')) return;
+  try {
+    await api('/rest/v1/player_match_records?id=eq.' + id, {method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    await loadDailyRecords(); await loadHistory(); await loadStats(); await loadDashboard();
+  } catch(e) { msg('recordMessage',e.message,'error'); }
 }
 
-async function loadDashboard(){
- try{
-  const a=await aggregate();
-  $('dPlayers').textContent=players.length;
-  $('dRecords').textContent=a.reduce((s,x)=>s+x.played,0);
-  $('dPoints').textContent=a.reduce((s,x)=>s+x.points,0);
-  $('dClean').textContent=a.reduce((s,x)=>s+x.clean,0);
- }catch(e){console.error(e)}
+async function loadHistory() {
+  const body = $('recordsBody'); if (!body) return;
+  try {
+    const date = $('matchDate')?.value;
+    let path = '/rest/v1/player_match_records?select=*&order=match_date.desc,id.desc';
+    if (date) path = '/rest/v1/player_match_records?match_date=eq.' + encodeURIComponent(date) + '&select=*&order=id.desc';
+    const data = await api(path); const rs = Array.isArray(data) ? data : [];
+    body.innerHTML = rs.length ? rs.map(r => `<tr><td>${esc(r.match_date)}</td><td>${esc(playerName(r.player_id))}</td><td>${esc(resultOf(r))}</td><td>${r.player_score==null?'-':r.player_score+' - '+r.opposition_score}</td><td>${r.clean_sheet?'Yes':'No'}</td><td><b>${r.points??0}</b></td><td><button class="btn secondary" onclick="editDailyRecord(${r.id})">✏️ Edit</button> <button class="btn danger" onclick="deleteDailyRecord(${r.id})">🗑️ Delete</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty">No records found.</td></tr>';
+  } catch(e) { body.innerHTML='<tr><td colspan="7" class="empty">'+esc(e.message)+'</td></tr>'; }
 }
 
-/* ===== STAFF ===== */
-
-async function staffCall(body){
- const r=await fetch(APP_CONFIG.SUPABASE_URL+'/functions/v1/'+APP_CONFIG.STAFF_FUNCTION,{method:'POST',headers:{apikey:APP_CONFIG.SUPABASE_PUBLISHABLE_KEY,Authorization:'Bearer '+token(),'Content-Type':'application/json'},body:JSON.stringify(body)});
- const text=await r.text();let d={};if(text.trim()){try{d=JSON.parse(text)}catch{d={message:text}}}
- if(!r.ok)throw new Error(d.error||d.message||'Staff request failed');return d;
+/* ---------- PLAYERS ---------- */
+function renderPlayers() {
+  const body=$('playersBody'); if(!body)return;
+  const q=($('playerSearch')?.value||'').toLowerCase();
+  const list=players.filter(p=>(p.Name||'').toLowerCase().includes(q)||(p['Nick Name']||'').toLowerCase().includes(q));
+  body.innerHTML=list.length?list.map(p=>`<tr><td>${esc(p.Name)}</td><td>${esc(p['Nick Name'])}</td><td>${esc(p.Phone)}</td><td><button class="btn secondary" onclick="editPlayer(${p.id})">✏️ Edit</button> <button class="btn danger" onclick="deletePlayer(${p.id})">🗑️ Delete</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">No players found.</td></tr>';
 }
-async function loadStaff(){
- try{
-  const d=await staffCall({action:'list'});$('staffNav').classList.remove('hidden');$('role').textContent='• Admin';
-  const users=d.users||d.staff||d||[];
-  $('staffBody').innerHTML=users.length?users.map(u=>`<tr><td>${esc(u.email)}</td><td>${esc(u.role||'staff')}</td><td>${esc(u.created_at||'-')}</td><td>${u.role==='admin'?'Protected':`<button class="btn danger" onclick="removeStaff('${u.id}')">Remove</button>`}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">No staff accounts.</td></tr>';
- }catch(e){$('staffNav').classList.add('hidden');$('role').textContent='• Staff'}
-}
-async function createStaff(){try{const email=$('sEmail').value.trim(),password=$('sPassword').value;if(!email||password.length<6){note('staffMsg','Enter email and a password of at least 6 characters.','error');return}await staffCall({action:'create',email,password});$('sEmail').value='';$('sPassword').value='';note('staffMsg','Staff account created.','success');loadStaff()}catch(e){note('staffMsg',e.message,'error')}}
-async function removeStaff(id){if(!confirm('Remove this staff account?'))return;try{await staffCall({action:'delete',user_id:id});loadStaff()}catch(e){note('staffMsg',e.message,'error')}}
+function editPlayer(id){const p=players.find(x=>x.id==id);if(!p)return;editingPlayerId=id;$('pName').value=p.Name||'';$('pNick').value=p['Nick Name']||'';$('pPhone').value=p.Phone||'';$('pPhoto').value=p.Photo_url||'';showView('players');}
+async function savePlayer(){const body={Name:$('pName').value.trim(),'Nick Name':$('pNick').value.trim(),Phone:$('pPhone').value.trim(),Photo_url:$('pPhoto').value.trim()||null};if(!body.Name)return msg('playerMsg','Enter player name.','error');try{if(editingPlayerId)await api('/rest/v1/Players?id=eq.'+editingPlayerId,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});else await api('/rest/v1/Players',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});clearPlayerForm();await loadPlayers();msg('playerMsg','Player saved.','success');}catch(e){msg('playerMsg',e.message,'error')}}
+function clearPlayerForm(){editingPlayerId=null;['pName','pNick','pPhone','pPhoto'].forEach(id=>{if($(id))$(id).value=''})}
+async function deletePlayer(id){if(!confirm('Delete this player and their records?'))return;try{await api('/rest/v1/Players?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}});await loadPlayers();await loadStats();await loadDashboard();}catch(e){msg('playerMsg',e.message,'error')}}
 
-/* ===== START ===== */
+/* ---------- STATS ---------- */
+async function aggregate(){const rs=await api('/rest/v1/player_match_records?select=*')||[];const map=new Map(players.map(p=>[p.id,{player:p,played:0,wins:0,draws:0,losses:0,points:0,clean:0,gd:0}]));for(const r of rs){const x=map.get(r.player_id);if(!x)continue;x.played++;const z=resultOf(r);if(z==='Win')x.wins++;else if(z==='Draw')x.draws++;else if(z==='Loss')x.losses++;x.points+=Number(r.points||0);x.clean+=r.clean_sheet?1:0;x.gd+=Number(r.goal_difference||0)}return [...map.values()]}
+async function loadStats(){try{const a=await aggregate();a.sort((x,y)=>y.points-x.points||y.gd-x.gd||y.wins-x.wins||x.player.Name.localeCompare(y.player.Name));if($('statsBody'))$('statsBody').innerHTML=a.map(x=>`<tr><td>${esc(x.player.Name)}</td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td><b>${x.points}</b></td><td>${x.clean}</td><td>${x.gd}</td></tr>`).join('');if($('leaderBody'))$('leaderBody').innerHTML=a.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.player.Name)}</td><td><b>${x.points}</b></td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.gd}</td><td>${x.clean}</td></tr>`).join('')}catch(e){console.error(e)}}
+async function loadDashboard(){try{const a=await aggregate();$('dPlayers').textContent=players.length;$('dRecords').textContent=a.reduce((s,x)=>s+x.played,0);$('dPoints').textContent=a.reduce((s,x)=>s+x.points,0);$('dClean').textContent=a.reduce((s,x)=>s+x.clean,0)}catch(e){console.error(e)}}
 
+/* ---------- STAFF ---------- */
+async function staffCall(body){const r=await fetch(APP_CONFIG.SUPABASE_URL+'/functions/v1/'+APP_CONFIG.STAFF_FUNCTION,{method:'POST',headers:{apikey:APP_CONFIG.SUPABASE_PUBLISHABLE_KEY,Authorization:'Bearer '+token(),'Content-Type':'application/json'},body:JSON.stringify(body)});const t=await r.text();let d={};if(t.trim()){try{d=JSON.parse(t)}catch{d={message:t}}}if(!r.ok)throw new Error(d.error||d.message||'Staff request failed');return d}
+async function loadStaff(){try{const d=await staffCall({action:'list'});const users=d.users||d.staff||d||[];$('staffBody').innerHTML=users.length?users.map(u=>`<tr><td>${esc(u.email)}</td><td>${esc(u.role||'staff')}</td><td>${esc(u.created_at||'-')}</td><td>${u.role==='admin'?'Protected':`<button class="btn danger" onclick="removeStaff('${u.id}')">Remove</button>`}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">No staff accounts.</td></tr>'}catch(e){console.log(e)}}
+async function createStaff(){try{const email=$('sEmail').value.trim(),password=$('sPassword').value;if(!email||password.length<6)return msg('staffMsg','Enter email and a password of at least 6 characters.','error');await staffCall({action:'create',email,password});$('sEmail').value='';$('sPassword').value='';msg('staffMsg','Staff account created.','success');loadStaff()}catch(e){msg('staffMsg',e.message,'error')}}
+async function removeStaff(id){if(!confirm('Remove this staff account?'))return;try{await staffCall({action:'delete',user_id:id});loadStaff()}catch(e){msg('staffMsg',e.message,'error')}}
+
+/* ---------- START ---------- */
 (async()=>{
- if(!(await requireLogin()))return;
- try{
-  await loadPlayers();
-  const today=new Date().toISOString().slice(0,10);
-  $('matchDate').value=today;
-  await loadExistingRecords();
-  await loadHistory();
-  await loadDashboard();
-  await loadStats();
-  await loadStaff();
-  showView(location.hash.slice(1)||'dashboard');
- }catch(e){console.error(e)}
+  try {
+    if (typeof requireLogin === 'function' && !(await requireLogin())) return;
+    buildDailyRecordsUI();
+    const today=new Date().toISOString().slice(0,10);
+    if($('matchDate'))$('matchDate').value=today;
+    await loadPlayers();
+    await loadDailyRecords();
+    await loadHistory();
+    await loadDashboard();
+    await loadStats();
+    await loadStaff();
+    showView(location.hash.slice(1)||'dashboard');
+  } catch(e) { console.error(e); }
 })();
