@@ -437,6 +437,90 @@ input[type="date"] {
 
 
 <!-- =========================
+     DAILY RECORD HISTORY
+========================= -->
+
+<div class="card">
+
+    <h2>📋 Daily Record History</h2>
+
+    <div class="info">
+        View, edit or delete saved player records.
+    </div>
+
+    <div class="history-controls">
+
+        <div>
+            <label for="historyDate">
+                History Date
+            </label>
+
+            <input
+                type="date"
+                id="historyDate"
+            >
+        </div>
+
+        <button
+            type="button"
+            class="history-btn"
+            onclick="loadHistory()"
+        >
+            🔄 Load Records
+        </button>
+
+        <button
+            type="button"
+            class="history-btn"
+            onclick="loadAllHistory()"
+        >
+            📋 All Records
+        </button>
+
+    </div>
+
+    <div
+        id="historyMessage"
+        class="message"
+    ></div>
+
+    <div class="history-table-wrap">
+
+        <table class="history-table">
+
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Result</th>
+                    <th>Score</th>
+                    <th>Clean Sheet</th>
+                    <th>Points</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="historyBody">
+
+                <tr>
+                    <td
+                        colspan="6"
+                        class="history-empty"
+                    >
+                        Loading records...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- =========================
      PLAYER RESULTS
 ========================= -->
 
@@ -592,89 +676,7 @@ input[type="date"] {
 </div>
 
 
-<!-- =========================
-     DAILY RECORD HISTORY
-========================= -->
 
-<div class="card">
-
-    <h2>📋 Daily Record History</h2>
-
-    <div class="info">
-        View, edit or delete saved player records.
-    </div>
-
-    <div class="history-controls">
-
-        <div>
-            <label for="historyDate">
-                History Date
-            </label>
-
-            <input
-                type="date"
-                id="historyDate"
-            >
-        </div>
-
-        <button
-            type="button"
-            class="history-btn"
-            onclick="loadHistory()"
-        >
-            🔄 Load Records
-        </button>
-
-        <button
-            type="button"
-            class="history-btn"
-            onclick="loadAllHistory()"
-        >
-            📋 All Records
-        </button>
-
-    </div>
-
-    <div
-        id="historyMessage"
-        class="message"
-    ></div>
-
-    <div class="history-table-wrap">
-
-        <table class="history-table">
-
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>Result</th>
-                    <th>Score</th>
-                    <th>Clean Sheet</th>
-                    <th>Points</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <tbody id="historyBody">
-
-                <tr>
-                    <td
-                        colspan="6"
-                        class="history-empty"
-                    >
-                        Loading records...
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-</div>
 
 
 <script>
@@ -1985,7 +1987,80 @@ async function loadHistory() {
     }
 }
 
-async function editHistoryRecord(recordId) {
+async async function loadAllHistory() {
+
+    const body = document.getElementById("historyBody");
+    const message = document.getElementById("historyMessage");
+
+    if (!body) return;
+
+    body.innerHTML = `
+        <tr>
+            <td colspan="6" class="history-empty">
+                Loading all records...
+            </td>
+        </tr>
+    `;
+
+    if (message) message.innerText = "";
+
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/player_match_records?select=*&order=match_date.desc,id.asc`,
+            {
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                }
+            }
+        );
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const records = await response.json();
+        historyRecords = records;
+
+        if (!records.length) {
+            body.innerHTML = `<tr><td colspan="6" class="history-empty">No records found.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = "";
+
+        records.forEach(record => {
+            const player = players.find(p => Number(p.id) === Number(record.player_id));
+            const playerName = player ? player.Name : `Player #${record.player_id}`;
+            const result = record.match_result || record.result || getResult(record);
+            const hasScore = record.player_score !== null && record.opposition_score !== null;
+            const score = hasScore ? `${record.player_score} - ${record.opposition_score}` : "Not entered";
+            const cleanSheet = record.clean_sheet === true;
+            let points = "—";
+            if (hasScore) {
+                const ps = Number(record.player_score), os = Number(record.opposition_score);
+                points = ps > os ? 3 + (os === 0 ? 1 : 0) : ps === os ? 1 + (ps === 0 ? 1 : 0) : 0;
+            }
+            const badgeClass = result === "Win" ? "badge-win" : result === "Draw" ? "badge-draw" : result === "Loss" ? "badge-loss" : "";
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${escapeHtml(playerName)}</td>
+                <td><span class="badge ${badgeClass}">${escapeHtml(result || "—")}</span></td>
+                <td>${escapeHtml(score)}</td>
+                <td>${cleanSheet ? "✅ Yes" : "—"}</td>
+                <td><strong>${points}</strong></td>
+                <td>
+                    <button class="history-action edit-record-btn" onclick="editHistoryRecord(${record.id})">✏️ Edit</button>
+                    <button class="history-action delete-record-btn" onclick="deleteHistoryRecord(${record.id})">🗑️ Delete</button>
+                </td>`;
+            body.appendChild(row);
+        });
+    } catch (error) {
+        console.error(error);
+        body.innerHTML = `<tr><td colspan="6" class="history-empty" style="color:red;">Error loading history: ${escapeHtml(error.message)}</td></tr>`;
+    }
+}
+
+
+function editHistoryRecord(recordId) {
 
     const record = historyRecords.find(
         r => Number(r.id) === Number(recordId)
@@ -2319,8 +2394,7 @@ function escapeHtml(text) {
     }
 
     setToday();
-    loadPlayers();
-    loadHistory();
+    loadPlayers().then(() => loadHistory());
 
 })();
 
