@@ -264,13 +264,8 @@ const SUPABASE_KEY =
 
 
 function getReturnPage(){
-
-    const params = new URLSearchParams(window.location.search);
-    const requested = params.get("return");
-
-    if(requested === "app.html"){
-        return "app.html";
-    }
+    return "app.html";
+}
 
     return "app.html";
 }
