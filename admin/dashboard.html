@@ -1081,7 +1081,9 @@ function escapeHtml(text) {
 // START
 // --------------------------------
 
-checkLogin().then(async isLoggedIn => { {
+(async function () {
+
+    const isLoggedIn = await checkLogin();
 
     if (!isLoggedIn) {
         return;
@@ -1089,10 +1091,11 @@ checkLogin().then(async isLoggedIn => { {
 
     await checkAdminRole();
 
-    loadDashboard();
+    await loadDashboard();
 
-    // Refresh dashboard data automatically every 30 seconds.
     setInterval(loadDashboard, 30000);
+
+})();
 });
 
 </script>
