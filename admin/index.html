@@ -268,22 +268,9 @@ function getReturnPage(){
     const params =
         new URLSearchParams(window.location.search);
 
-    const requested =
-        params.get("return");
-
-    const allowedPages = [
-
-        "dashboard.html",
-
-        "players.html",
-
-        "daily-records.html",
-
-        "stats.html",
-
-        "leaderboard.html",
-
-        "staff.html"
+   const allowedPages = [
+    "app.html"
+];
 
     ];
 
@@ -296,7 +283,7 @@ function getReturnPage(){
 
     }
 
-    return "dashboard.html";
+    return "app.html";
 }
 
 
