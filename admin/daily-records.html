@@ -592,6 +592,88 @@ input[type="date"] {
 </div>
 
 
+<!-- =========================
+     DAILY RECORD HISTORY
+========================= -->
+
+<div class="card">
+
+    <h2>📋 Daily Record History</h2>
+
+    <div class="info">
+        View, edit or delete saved player records.
+    </div>
+
+    <div class="history-controls">
+
+        <div>
+            <label for="historyDate">
+                History Date
+            </label>
+
+            <input
+                type="date"
+                id="historyDate"
+            >
+        </div>
+
+        <button
+            type="button"
+            class="history-btn"
+            onclick="loadHistory()"
+        >
+            🔄 Load Records
+        </button>
+
+        <button
+            type="button"
+            class="history-btn"
+            onclick="loadAllHistory()"
+        >
+            📋 All Records
+        </button>
+
+    </div>
+
+    <div
+        id="historyMessage"
+        class="message"
+    ></div>
+
+    <div class="history-table-wrap">
+
+        <table class="history-table">
+
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Result</th>
+                    <th>Score</th>
+                    <th>Clean Sheet</th>
+                    <th>Points</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="historyBody">
+
+                <tr>
+                    <td
+                        colspan="6"
+                        class="history-empty"
+                    >
+                        Loading records...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
 </div>
 
 
