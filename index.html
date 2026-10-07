@@ -2386,23 +2386,33 @@ function showPlayers(){
 ================================================== */
 
 function showLeaderboard(){
+
   document.getElementById('topSection').style.display='block';
+
   document.getElementById('leaderboard').style.display='block';
 
   document.getElementById('playersHeading').style.display='none';
+
   document.getElementById('players').style.display='none';
 
   document.getElementById('searchPanel').style.display='none';
 
-  const monthlyPanel=document.getElementById('monthlyWinnerPanel');
+
+  const monthlyPanel =
+    document.getElementById('monthlyWinnerPanel');
+
   if(monthlyPanel){
     monthlyPanel.style.display='none';
   }
 
+
   document.getElementById('profile').className='card profile';
+
   document.getElementById('profile').innerHTML='';
 
+
   buildLeaderboard();
+
 
   window.scrollTo({
     top:0,
