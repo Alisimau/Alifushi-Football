@@ -245,4 +245,94 @@ async function removeStaff(id){if(!confirm('Remove this staff account?'))return;
     showView(location.hash.slice(1)||'dashboard');
   } catch(e) { console.error(e); }
 })();
-\n\n/* ===== PLAYER PHOTO + CROP ===== */\nlet cropImage=null,cropScale=1,cropX=0,cropY=0,cropDragging=false,cropStartX=0,cropStartY=0,cropBaseX=0,cropBaseY=0;\n\nfunction ensurePlayerPhotoUI(){\n const section=$('players'); if(!section)return;\n const form=section.querySelector('#pPhoto')?.closest('.field');\n if(form)form.style.display='none';\n if($('playerPhotoBox'))return;\n const card=section.querySelector('#pName')?.closest('.card'); if(!card)return;\n const anchor=section.querySelector('#pPhoto')?.closest('.field');\n const box=document.createElement('div'); box.id='playerPhotoBox'; box.innerHTML=`\n  <div class="field"><label>Player Photo</label>\n   <input id="pPhotoFile" type="file" accept="image/*" onchange="openCropper(event)" style="width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:10px">\n   <div id="photoPreview" style="margin-top:12px;display:none;align-items:center;gap:12px">\n    <img id="photoPreviewImg" style="width:90px;height:90px;object-fit:cover;border-radius:50%;border:3px solid #e5e7eb">\n    <button type="button" class="btn gray" onclick="removePlayerPhoto()">Remove Photo</button>\n   </div>\n  </div>`;\n if(anchor)anchor.parentNode.insertBefore(box,anchor); else card.insertBefore(box,card.firstChild);\n if(!$('cropModal')){\n  const m=document.createElement('div');m.id='cropModal';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;align-items:center;justify-content:center;padding:20px';\n  m.innerHTML=`<div style="background:#fff;border-radius:18px;width:min(560px,100%);padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.3)">\n   <h2 style="margin:0 0 6px">Crop Player Photo</h2><p style="margin:0 0 14px;color:#667085">Drag the photo and use the zoom slider.</p>\n   <div style="display:flex;justify-content:center"><canvas id="cropCanvas" width="500" height="500" style="width:min(500px,90vw);height:min(500px,90vw);background:#111;border-radius:12px;touch-action:none"></canvas></div>\n   <div style="margin:15px 0"><label>Zoom</label><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" oninput="changeCropZoom(this.value)" style="width:100%"></div>\n   <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn gray" onclick="closeCropper()">Cancel</button><button class="btn" onclick="useCroppedPhoto()">Use This Crop</button></div>\n  </div>`;\n  document.body.appendChild(m);\n  const c=$('cropCanvas');c.addEventListener('pointerdown',cropDown);c.addEventListener('pointermove',cropMove);c.addEventListener('pointerup',cropUp);c.addEventListener('pointercancel',cropUp);\n }\n}\n\nfunction openCropper(e){\n const file=e.target.files?.[0];if(!file)return;\n if(!file.type.startsWith('image/')){msg('playerMsg','Please select an image file.','error');return}\n const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{cropImage=im;cropScale=Math.max(500/im.width,500/im.height);cropX=(500-im.width*cropScale)/2;cropY=(500-im.height*cropScale)/2;cropBaseX=cropX;cropBaseY=cropY;$('cropZoom').value=1;drawCrop();$('cropModal').style.display='flex'};im.src=reader.result};reader.readAsDataURL(file);\n}\nfunction drawCrop(){const c=$('cropCanvas');if(!c||!cropImage)return;const x=c.getContext('2d');x.clearRect(0,0,500,500);x.fillStyle='#111';x.fillRect(0,0,500,500);x.drawImage(cropImage,cropX,cropY,cropImage.width*cropScale,cropImage.height*cropScale)}\nfunction changeCropZoom(v){if(!cropImage)return;const z=Number(v);const base=Math.max(500/cropImage.width,500/cropImage.height);const old=cropScale;const cx=250,cy=250;cropScale=base*z;cropX=cx-(cx-cropX)*(cropScale/old);cropY=cy-(cy-cropY)*(cropScale/old);drawCrop()}\nfunction cropDown(e){cropDragging=true;cropStartX=e.clientX;cropStartY=e.clientY;cropBaseX=cropX;cropBaseY=cropY;$('cropCanvas').setPointerCapture?.(e.pointerId)}\nfunction cropMove(e){if(!cropDragging)return;cropX=cropBaseX+(e.clientX-cropStartX);cropY=cropBaseY+(e.clientY-cropStartY);drawCrop()}\nfunction cropUp(){cropDragging=false}\nfunction closeCropper(){if($('cropModal'))$('cropModal').style.display='none'}\nfunction useCroppedPhoto(){\n const c=$('cropCanvas');if(!c)return;\n $('pPhoto').value=c.toDataURL('image/jpeg',.82);\n $('photoPreviewImg').src=$('pPhoto').value;$('photoPreview').style.display='flex';\n closeCropper();\n}\nfunction removePlayerPhoto(){if($('pPhoto'))$('pPhoto').value='';if($('pPhotoFile'))$('pPhotoFile').value='';if($('photoPreview'))$('photoPreview').style.display='none'}\n\nfunction renderPlayerPhotoPreview(src){\n ensurePlayerPhotoUI();const box=$('photoPreview'),im=$('photoPreviewImg');\n if(src){im.src=src;box.style.display='flex'}else box.style.display='none';\n}\n\nfunction renderPlayers(){\n ensurePlayerPhotoUI();const body=$('playersBody');if(!body)return;\n const q=($('playerSearch')?.value||'').toLowerCase();\n const list=players.filter(p=>(p.Name||'').toLowerCase().includes(q)||(p['Nick Name']||'').toLowerCase().includes(q));\n body.innerHTML=list.length?list.map(p=>`<tr><td><div style="display:flex;align-items:center;gap:10px"><img src="${esc(p.Photo_url||'')}" onerror="this.style.display='none'" style="width:42px;height:42px;border-radius:50%;object-fit:cover;background:#eef2f6"> <span>${esc(p.Name)}</span></div></td><td>${esc(p['Nick Name'])}</td><td>${esc(p.Phone)}</td><td><button class="btn secondary" onclick="editPlayer(${p.id})">✏️ Edit</button> <button class="btn danger" onclick="deletePlayer(${p.id})">🗑️ Delete</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">No players found.</td></tr>';\n}\n\nfunction editPlayer(id){\n const p=players.find(x=>x.id==id);if(!p)return;editingPlayerId=id;ensurePlayerPhotoUI();\n $('pName').value=p.Name||'';$('pNick').value=p['Nick Name']||'';$('pPhone').value=p.Phone||'';$('pPhoto').value=p.Photo_url||'';\n if($('pPhotoFile'))$('pPhotoFile').value='';renderPlayerPhotoPreview(p.Photo_url||'');showView('players');scrollTo({top:0,behavior:'smooth'});\n}\n\nasync function savePlayer(){\n const body={Name:$('pName').value.trim(),'Nick Name':$('pNick').value.trim(),Phone:$('pPhone').value.trim(),Photo_url:$('pPhoto').value.trim()||null};\n if(!body.Name){msg('playerMsg','Enter player name.','error');return}\n try{\n  if(editingPlayerId)await api('/rest/v1/Players?id=eq.'+editingPlayerId,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});\n  else await api('/rest/v1/Players',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});\n  clearPlayerForm();await loadPlayers();await loadStats();await loadDashboard();msg('playerMsg','Player saved successfully.','success');\n }catch(e){msg('playerMsg',e.message,'error')}\n}\nfunction clearPlayerForm(){editingPlayerId=null;['pName','pNick','pPhone','pPhoto'].forEach(id=>{if($(id))$(id).value=''});if($('pPhotoFile'))$('pPhotoFile').value='';if($('photoPreview'))$('photoPreview').style.display='none'}\n\nasync function loadStats(){\n try{const a=await aggregate();a.sort((x,y)=>y.points-x.points||y.gd-x.gd||y.wins-x.wins||x.player.Name.localeCompare(y.player.Name));\n  if($('statsBody'))$('statsBody').innerHTML=a.map(x=>`<tr><td><div style="display:flex;align-items:center;gap:10px"><img src="${esc(x.player.Photo_url||'')}" onerror="this.style.display='none'" style="width:40px;height:40px;border-radius:50%;object-fit:cover"><span>${esc(x.player.Name)}</span></div></td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td><b>${x.points}</b></td><td>${x.clean}</td><td>${x.gd}</td></tr>`).join('');\n  if($('leaderBody'))$('leaderBody').innerHTML=a.map((x,i)=>`<tr><td>${i+1}</td><td><div style="display:flex;align-items:center;gap:10px"><img src="${esc(x.player.Photo_url||'')}" onerror="this.style.display='none'" style="width:46px;height:46px;border-radius:50%;object-fit:cover"><span><b>${esc(x.player.Name)}</b></span></div></td><td><b>${x.points}</b></td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.gd}</td><td>${x.clean}</td></tr>`).join('');\n }catch(e){console.error(e)}\n}\n\n/* Install photo controls after the existing app has loaded. */\nsetTimeout(()=>{ensurePlayerPhotoUI();renderPlayers();loadStats()},300);\n
+
+
+/* ===== PLAYER PHOTO + CROP ===== */
+let cropImage=null,cropScale=1,cropX=0,cropY=0,cropDragging=false,cropStartX=0,cropStartY=0,cropBaseX=0,cropBaseY=0;
+
+function ensurePlayerPhotoUI(){
+ const section=$('players'); if(!section)return;
+ const form=section.querySelector('#pPhoto')?.closest('.field');
+ if(form)form.style.display='none';
+ if($('playerPhotoBox'))return;
+ const card=section.querySelector('#pName')?.closest('.card'); if(!card)return;
+ const anchor=section.querySelector('#pPhoto')?.closest('.field');
+ const box=document.createElement('div'); box.id='playerPhotoBox'; box.innerHTML=`
+  <div class="field"><label>Player Photo</label>
+   <input id="pPhotoFile" type="file" accept="image/*" onchange="openCropper(event)" style="width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:10px">
+   <div id="photoPreview" style="margin-top:12px;display:none;align-items:center;gap:12px">
+    <img id="photoPreviewImg" style="width:90px;height:90px;object-fit:cover;border-radius:50%;border:3px solid #e5e7eb">
+    <button type="button" class="btn gray" onclick="removePlayerPhoto()">Remove Photo</button>
+   </div>
+  </div>`;
+ if(anchor)anchor.parentNode.insertBefore(box,anchor); else card.insertBefore(box,card.firstChild);
+ if(!$('cropModal')){
+  const m=document.createElement('div');m.id='cropModal';m.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML=`<div style="background:#fff;border-radius:18px;width:min(560px,100%);padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+   <h2 style="margin:0 0 6px">Crop Player Photo</h2><p style="margin:0 0 14px;color:#667085">Drag the photo and use the zoom slider.</p>
+   <div style="display:flex;justify-content:center"><canvas id="cropCanvas" width="500" height="500" style="width:min(500px,90vw);height:min(500px,90vw);background:#111;border-radius:12px;touch-action:none"></canvas></div>
+   <div style="margin:15px 0"><label>Zoom</label><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" oninput="changeCropZoom(this.value)" style="width:100%"></div>
+   <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn gray" onclick="closeCropper()">Cancel</button><button class="btn" onclick="useCroppedPhoto()">Use This Crop</button></div>
+  </div>`;
+  document.body.appendChild(m);
+  const c=$('cropCanvas');c.addEventListener('pointerdown',cropDown);c.addEventListener('pointermove',cropMove);c.addEventListener('pointerup',cropUp);c.addEventListener('pointercancel',cropUp);
+ }
+}
+
+function openCropper(e){
+ const file=e.target.files?.[0];if(!file)return;
+ if(!file.type.startsWith('image/')){msg('playerMsg','Please select an image file.','error');return}
+ const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{cropImage=im;cropScale=Math.max(500/im.width,500/im.height);cropX=(500-im.width*cropScale)/2;cropY=(500-im.height*cropScale)/2;cropBaseX=cropX;cropBaseY=cropY;$('cropZoom').value=1;drawCrop();$('cropModal').style.display='flex'};im.src=reader.result};reader.readAsDataURL(file);
+}
+function drawCrop(){const c=$('cropCanvas');if(!c||!cropImage)return;const x=c.getContext('2d');x.clearRect(0,0,500,500);x.fillStyle='#111';x.fillRect(0,0,500,500);x.drawImage(cropImage,cropX,cropY,cropImage.width*cropScale,cropImage.height*cropScale)}
+function changeCropZoom(v){if(!cropImage)return;const z=Number(v);const base=Math.max(500/cropImage.width,500/cropImage.height);const old=cropScale;const cx=250,cy=250;cropScale=base*z;cropX=cx-(cx-cropX)*(cropScale/old);cropY=cy-(cy-cropY)*(cropScale/old);drawCrop()}
+function cropDown(e){cropDragging=true;cropStartX=e.clientX;cropStartY=e.clientY;cropBaseX=cropX;cropBaseY=cropY;$('cropCanvas').setPointerCapture?.(e.pointerId)}
+function cropMove(e){if(!cropDragging)return;cropX=cropBaseX+(e.clientX-cropStartX);cropY=cropBaseY+(e.clientY-cropStartY);drawCrop()}
+function cropUp(){cropDragging=false}
+function closeCropper(){if($('cropModal'))$('cropModal').style.display='none'}
+function useCroppedPhoto(){
+ const c=$('cropCanvas');if(!c)return;
+ $('pPhoto').value=c.toDataURL('image/jpeg',.82);
+ $('photoPreviewImg').src=$('pPhoto').value;$('photoPreview').style.display='flex';
+ closeCropper();
+}
+function removePlayerPhoto(){if($('pPhoto'))$('pPhoto').value='';if($('pPhotoFile'))$('pPhotoFile').value='';if($('photoPreview'))$('photoPreview').style.display='none'}
+
+function renderPlayerPhotoPreview(src){
+ ensurePlayerPhotoUI();const box=$('photoPreview'),im=$('photoPreviewImg');
+ if(src){im.src=src;box.style.display='flex'}else box.style.display='none';
+}
+
+function renderPlayers(){
+ ensurePlayerPhotoUI();const body=$('playersBody');if(!body)return;
+ const q=($('playerSearch')?.value||'').toLowerCase();
+ const list=players.filter(p=>(p.Name||'').toLowerCase().includes(q)||(p['Nick Name']||'').toLowerCase().includes(q));
+ body.innerHTML=list.length?list.map(p=>`<tr><td><div style="display:flex;align-items:center;gap:10px"><img src="${esc(p.Photo_url||'')}" onerror="this.style.display='none'" style="width:42px;height:42px;border-radius:50%;object-fit:cover;background:#eef2f6"> <span>${esc(p.Name)}</span></div></td><td>${esc(p['Nick Name'])}</td><td>${esc(p.Phone)}</td><td><button class="btn secondary" onclick="editPlayer(${p.id})">✏️ Edit</button> <button class="btn danger" onclick="deletePlayer(${p.id})">🗑️ Delete</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">No players found.</td></tr>';
+}
+
+function editPlayer(id){
+ const p=players.find(x=>x.id==id);if(!p)return;editingPlayerId=id;ensurePlayerPhotoUI();
+ $('pName').value=p.Name||'';$('pNick').value=p['Nick Name']||'';$('pPhone').value=p.Phone||'';$('pPhoto').value=p.Photo_url||'';
+ if($('pPhotoFile'))$('pPhotoFile').value='';renderPlayerPhotoPreview(p.Photo_url||'');showView('players');scrollTo({top:0,behavior:'smooth'});
+}
+
+async function savePlayer(){
+ const body={Name:$('pName').value.trim(),'Nick Name':$('pNick').value.trim(),Phone:$('pPhone').value.trim(),Photo_url:$('pPhoto').value.trim()||null};
+ if(!body.Name){msg('playerMsg','Enter player name.','error');return}
+ try{
+  if(editingPlayerId)await api('/rest/v1/Players?id=eq.'+editingPlayerId,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
+  else await api('/rest/v1/Players',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
+  clearPlayerForm();await loadPlayers();await loadStats();await loadDashboard();msg('playerMsg','Player saved successfully.','success');
+ }catch(e){msg('playerMsg',e.message,'error')}
+}
+function clearPlayerForm(){editingPlayerId=null;['pName','pNick','pPhone','pPhoto'].forEach(id=>{if($(id))$(id).value=''});if($('pPhotoFile'))$('pPhotoFile').value='';if($('photoPreview'))$('photoPreview').style.display='none'}
+
+async function loadStats(){
+ try{const a=await aggregate();a.sort((x,y)=>y.points-x.points||y.gd-x.gd||y.wins-x.wins||x.player.Name.localeCompare(y.player.Name));
+  if($('statsBody'))$('statsBody').innerHTML=a.map(x=>`<tr><td><div style="display:flex;align-items:center;gap:10px"><img src="${esc(x.player.Photo_url||'')}" onerror="this.style.display='none'" style="width:40px;height:40px;border-radius:50%;object-fit:cover"><span>${esc(x.player.Name)}</span></div></td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td><b>${x.points}</b></td><td>${x.clean}</td><td>${x.gd}</td></tr>`).join('');
+  if($('leaderBody'))$('leaderBody').innerHTML=a.map((x,i)=>`<tr><td>${i+1}</td><td><div style="display:flex;align-items:center;gap:10px"><img src="${esc(x.player.Photo_url||'')}" onerror="this.style.display='none'" style="width:46px;height:46px;border-radius:50%;object-fit:cover"><span><b>${esc(x.player.Name)}</b></span></div></td><td><b>${x.points}</b></td><td>${x.played}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.gd}</td><td>${x.clean}</td></tr>`).join('');
+ }catch(e){console.error(e)}
+}
+
+/* Install photo controls after the existing app has loaded. */
+setTimeout(()=>{ensurePlayerPhotoUI();renderPlayers();loadStats()},300);
