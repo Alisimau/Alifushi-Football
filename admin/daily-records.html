@@ -364,75 +364,6 @@ input[type="date"] {
 
 }
 
-
-/* LIQUID GLASS THEME */
-:root{--line:rgba(255,255,255,.22);--muted:rgba(226,232,240,.72)}
-*{box-sizing:border-box}
-body{
- margin:0!important;min-height:100vh;color:#f8fafc!important;
- font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif!important;
- background:
- radial-gradient(circle at 10% 10%,rgba(56,189,248,.28),transparent 32%),
- radial-gradient(circle at 90% 20%,rgba(139,92,246,.30),transparent 30%),
- radial-gradient(circle at 50% 100%,rgba(14,165,233,.20),transparent 35%),
- linear-gradient(135deg,#07111f,#0b1220 48%,#111827)!important;
- background-attachment:fixed;
-}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.3;background-image:radial-gradient(rgba(255,255,255,.14) 1px,transparent 1px);background-size:24px 24px}
-.header{
- background:rgba(15,23,42,.42)!important;border-bottom:1px solid var(--line)!important;
- backdrop-filter:blur(28px) saturate(150%)!important;-webkit-backdrop-filter:blur(28px) saturate(150%)!important;
- box-shadow:0 18px 60px rgba(0,0,0,.22)!important;position:relative;z-index:1
-}
-.header p{color:var(--muted)!important}
-.nav a{
- color:#fff!important;background:rgba(255,255,255,.08)!important;border:1px solid var(--line)!important;
- backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 25px rgba(0,0,0,.12)!important;transition:.2s
-}
-.nav a:hover{background:rgba(255,255,255,.18)!important;transform:translateY(-1px)}
-.container{position:relative;z-index:1}
-.card,.score-box{
- background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.07))!important;
- border:1px solid var(--line)!important;border-radius:20px!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 20px 55px rgba(0,0,0,.20)!important;
- backdrop-filter:blur(24px) saturate(150%)!important;-webkit-backdrop-filter:blur(24px) saturate(150%)!important;
- color:#fff!important
-}
-input,select{
- background:rgba(255,255,255,.09)!important;color:#fff!important;border:1px solid var(--line)!important;
- backdrop-filter:blur(15px)!important;-webkit-backdrop-filter:blur(15px)!important
-}
-input::placeholder{color:rgba(226,232,240,.55)!important}
-select option{background:#111827;color:#fff}
-label,h2,h3{color:#fff!important}
-.info{
- background:rgba(125,211,252,.10)!important;border-left:3px solid #7dd3fc!important;
- color:#dbeafe!important;border-radius:12px!important
-}
-.player-row{
- background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.12)!important;
- border-radius:14px!important
-}
-.save-btn,.apply-btn,.history-btn,.history-action{
- border:1px solid rgba(255,255,255,.24)!important;border-radius:12px!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 8px 25px rgba(0,0,0,.12)!important;transition:.2s
-}
-.save-btn,.apply-btn{background:linear-gradient(135deg,rgba(125,211,252,.9),rgba(129,140,248,.9))!important;color:#07111f!important}
-.history-btn{background:rgba(255,255,255,.10)!important;color:#fff!important}
-.edit-record-btn{background:rgba(125,211,252,.16)!important;color:#bae6fd!important}
-.delete-record-btn{background:rgba(248,113,113,.16)!important;color:#fecaca!important}
-.save-btn:hover,.apply-btn:hover,.history-btn:hover,.history-action:hover{transform:translateY(-1px);filter:brightness(1.1)}
-.history-table{border-collapse:separate!important;border-spacing:0!important}
-.history-table th{background:rgba(15,23,42,.58)!important;color:#e0f2fe!important;border-bottom:1px solid var(--line)!important}
-.history-table td{color:#f8fafc!important;border-bottom:1px solid rgba(255,255,255,.10)!important}
-.history-table tr:hover td{background:rgba(255,255,255,.05)!important}
-.badge-win{background:rgba(74,222,128,.16)!important;color:#bbf7d0!important}
-.badge-draw{background:rgba(250,204,21,.16)!important;color:#fef08a!important}
-.badge-loss{background:rgba(248,113,113,.16)!important;color:#fecaca!important}
-.message{color:#bae6fd!important}
-.history-empty,.no-players{color:var(--muted)!important}
-@media(max-width:700px){.header{padding:22px 12px!important}.container{padding:0 12px!important}.card,.score-box{border-radius:18px!important}}
 </style>
 
 </head>
@@ -466,7 +397,7 @@ label,h2,h3{color:#fff!important}
             👤 Players
         </a>
 
-        <a href="index.html">
+        <a href="daily-records.html">
             ➕ Daily Records
         </a>
 
@@ -673,8 +604,7 @@ label,h2,h3{color:#fff!important}
 const SUPABASE_URL =
     "https://yafowakgpjvzapmejptn.supabase.co";
 
-const SUPABASE_KEY =
-    "sb_publishable_vOuJPPohicfbh8mFf-VQlA_jQ244rjs";
+const SUPABASE_KEY = "sb_publishable_vOuJPPohicfbh8mFf-VQlA_jQ244rjs";
 
 
 let players = [];
@@ -1973,7 +1903,8 @@ async function loadHistory() {
     }
 }
 
-function editHistoryRecord(recordId) {
+async function editHistoryRecord(recordId) {
+
     const record = historyRecords.find(
         r => Number(r.id) === Number(recordId)
     );
@@ -1983,49 +1914,193 @@ function editHistoryRecord(recordId) {
         return;
     }
 
-    const select = document.querySelector(
-        `.result-select[data-player-id="${record.player_id}"]`
+    const player = players.find(
+        p => Number(p.id) === Number(record.player_id)
     );
 
-    if (select) {
-        select.value =
-            record.match_result ||
-            record.result ||
-            getResult(record);
+    const playerName = player
+        ? player.Name
+        : `Player #${record.player_id}`;
 
-        updateScoreBoxes();
+    const currentResult =
+        record.match_result ||
+        record.result ||
+        getResult(record);
+
+    const result = prompt(
+        `Edit result for ${playerName}.\nEnter Win, Draw or Loss:`,
+        currentResult
+    );
+
+    if (result === null) return;
+
+    const normalizedResult =
+        result.trim().toLowerCase();
+
+    const resultMap = {
+        win: "Win",
+        draw: "Draw",
+        loss: "Loss"
+    };
+
+    if (!resultMap[normalizedResult]) {
+        alert("Please enter exactly Win, Draw or Loss.");
+        return;
     }
 
-    if (
-        record.player_score !== null &&
-        record.opposition_score !== null
-    ) {
-        const ps = Number(record.player_score);
-        const os = Number(record.opposition_score);
+    const newResult = resultMap[normalizedResult];
 
-        if (ps === os) {
-            document.getElementById("drawScore").value = ps;
-        } else {
-            document.getElementById("winningScore").value =
-                Math.max(ps, os);
+    let playerScore = record.player_score;
+    let oppositionScore = record.opposition_score;
 
-            document.getElementById("losingScore").value =
-                Math.min(ps, os);
+    if (newResult === "Draw") {
+
+        const value = prompt(
+            `Enter the draw score for ${playerName}:`,
+            playerScore !== null
+                ? String(playerScore)
+                : "0"
+        );
+
+        if (value === null) return;
+
+        if (
+            value.trim() === "" ||
+            Number(value) < 0 ||
+            !Number.isInteger(Number(value))
+        ) {
+            alert("Please enter a valid whole-number score.");
+            return;
+        }
+
+        playerScore = Number(value);
+        oppositionScore = Number(value);
+
+    } else {
+
+        const currentFor =
+            playerScore !== null
+                ? Number(playerScore)
+                : "";
+
+        const currentAgainst =
+            oppositionScore !== null
+                ? Number(oppositionScore)
+                : "";
+
+        const scoreFor = prompt(
+            `Score for ${playerName}:`,
+            currentFor
+        );
+
+        if (scoreFor === null) return;
+
+        const scoreAgainst = prompt(
+            `Opponent score for ${playerName}:`,
+            currentAgainst
+        );
+
+        if (scoreAgainst === null) return;
+
+        playerScore = Number(scoreFor);
+        oppositionScore = Number(scoreAgainst);
+
+        if (
+            !Number.isInteger(playerScore) ||
+            !Number.isInteger(oppositionScore) ||
+            playerScore < 0 ||
+            oppositionScore < 0
+        ) {
+            alert("Please enter valid whole-number scores.");
+            return;
+        }
+
+        if (newResult === "Win" && playerScore <= oppositionScore) {
+            alert("For a Win, the player's score must be greater.");
+            return;
+        }
+
+        if (newResult === "Loss" && playerScore >= oppositionScore) {
+            alert("For a Loss, the player's score must be lower.");
+            return;
         }
     }
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    const cleanSheet =
+        oppositionScore === 0 &&
+        playerScore >= oppositionScore;
 
-    const message = document.getElementById("message");
-    message.style.color = "#2563eb";
-    message.innerText =
-        "Record loaded above. Make your changes and click Save Daily Results or Apply Score.";
+    try {
+
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/player_match_records?id=eq.${encodeURIComponent(recordId)}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                body: JSON.stringify({
+                    match_result: newResult,
+                    player_score: playerScore,
+                    opposition_score: oppositionScore,
+                    clean_sheet: cleanSheet
+                })
+            }
+        );
+
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            throw new Error(
+                responseText || `Update failed (${response.status})`
+            );
+        }
+
+        let updatedRows = [];
+        try {
+            updatedRows = responseText
+                ? JSON.parse(responseText)
+                : [];
+        } catch (_) {}
+
+        if (!updatedRows.length) {
+            throw new Error(
+                "The record was not updated. Check the Supabase UPDATE policy for player_match_records."
+            );
+        }
+
+        const message =
+            document.getElementById("historyMessage");
+
+        if (message) {
+            message.style.color = "green";
+            message.innerText = "Record updated successfully.";
+        }
+
+        await loadHistory();
+        await loadExistingRecords();
+
+    } catch (error) {
+
+        console.error(error);
+
+        const message =
+            document.getElementById("historyMessage");
+
+        if (message) {
+            message.style.color = "red";
+            message.innerText =
+                "Error updating record: " + error.message;
+        }
+    }
 }
 
+
 async function deleteHistoryRecord(recordId) {
+
     const record = historyRecords.find(
         r => Number(r.id) === Number(recordId)
     );
@@ -2051,39 +2126,81 @@ async function deleteHistoryRecord(recordId) {
         return;
     }
 
+    const message =
+        document.getElementById("historyMessage");
+
     try {
+
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/player_match_records?id=eq.${recordId}`,
+            `${SUPABASE_URL}/rest/v1/player_match_records?id=eq.${encodeURIComponent(recordId)}`,
             {
                 method: "DELETE",
                 headers: {
                     "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Prefer": "return=representation"
                 }
             }
         );
 
+        const responseText = await response.text();
+
         if (!response.ok) {
-            throw new Error(await response.text());
+            throw new Error(
+                responseText || `Delete failed (${response.status})`
+            );
         }
 
-        const message = document.getElementById("historyMessage");
-        message.style.color = "green";
-        message.innerText = "Record deleted successfully.";
+        let deletedRows = [];
+        try {
+            deletedRows = responseText
+                ? JSON.parse(responseText)
+                : [];
+        } catch (_) {}
+
+        if (!deletedRows.length) {
+            /*
+             * With restrictive RLS, a DELETE can return success
+             * without actually deleting a row. Verify it.
+             */
+            const verify = await fetch(
+                `${SUPABASE_URL}/rest/v1/player_match_records?id=eq.${encodeURIComponent(recordId)}&select=id`,
+                {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+            const remaining = await verify.json();
+
+            if (Array.isArray(remaining) && remaining.length > 0) {
+                throw new Error(
+                    "The record was not deleted. Check the Supabase DELETE policy for player_match_records."
+                );
+            }
+        }
+
+        if (message) {
+            message.style.color = "green";
+            message.innerText = "Record deleted successfully.";
+        }
 
         await loadHistory();
         await loadExistingRecords();
 
     } catch (error) {
+
         console.error(error);
 
-        const message = document.getElementById("historyMessage");
-        message.style.color = "red";
-        message.innerText =
-            "Error deleting record: " + error.message;
+        if (message) {
+            message.style.color = "red";
+            message.innerText =
+                "Error deleting record: " + error.message;
+        }
     }
 }
-
 /* =========================
    ESCAPE HTML
 ========================= */
@@ -2109,10 +2226,21 @@ function escapeHtml(text) {
    START
 ========================= */
 
-setToday();
+(function requireStaffLogin() {
 
-loadPlayers();
-loadHistory();
+    const token =
+        localStorage.getItem("haveeru_access_token");
+
+    if (!token) {
+        window.location.replace("index.html");
+        return;
+    }
+
+    setToday();
+    loadPlayers();
+    loadHistory();
+
+})();
 
 </script>
 
