@@ -2363,23 +2363,34 @@ function closeProfile(){
 ================================================== */
 
 function showPlayers(){
+
   document.getElementById('topSection').style.display='none';
+
   document.getElementById('leaderboard').style.display='none';
 
   document.getElementById('playersHeading').style.display='flex';
+
   document.getElementById('players').style.display='grid';
 
   document.getElementById('searchPanel').style.display='flex';
-  document.getElementById('monthlyWinnerPanel').style.display='block';
+
+
+  const monthlyPanel =
+    document.getElementById('monthlyWinnerPanel');
+
+  if(monthlyPanel){
+    monthlyPanel.style.display='block';
+  }
+
 
   document.getElementById('profile').className='card profile';
+
 
   document.getElementById('playersHeading').scrollIntoView({
     behavior:'smooth',
     block:'start'
   });
 }
-
 
 /* ==================================================
    SHOW LEADERBOARD
