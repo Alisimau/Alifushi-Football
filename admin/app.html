@@ -1,8 +1,149 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Haveeru Kulhun Admin</title><link rel="stylesheet" href="assets/css/admin.css"></head><body><header class="topbar"><div class="topbar-inner"><div class="brand">⚽ Haveeru Kulhun League <span id="role" class="small muted"></span></div><nav class="nav"><button data-view="dashboard">🏠 Dashboard</button><button data-view="records">➕ Daily Records</button><button data-view="players">👤 Players</button><button data-view="stats">📊 Statistics</button><button data-view="leaderboard">🏆 Leaderboard</button><button data-view="staff" id="staffNav" class="hidden">👥 Staff</button><button class="logout" onclick="logout()">Logout</button></nav></div></header><main class="wrap">
-<section id="dashboard" class="view active"><div class="hero"><h1>Dashboard</h1><p>League overview</p></div><div class="grid"><div class="card stat"><div class="num" id="dPlayers">-</div><div class="label">Players</div></div><div class="card stat"><div class="num" id="dRecords">-</div><div class="label">Match Records</div></div><div class="card stat"><div class="num" id="dPoints">-</div><div class="label">Total Points</div></div><div class="card stat"><div class="num" id="dClean">-</div><div class="label">Clean Sheets</div></div></div><div class="card"><h2>Quick Actions</h2><div class="actions"><button class="btn" onclick="showView('records')">➕ Add Daily Record</button><button class="btn secondary" onclick="showView('players')">👤 Manage Players</button><button class="btn secondary" onclick="showView('leaderboard')">🏆 View Leaderboard</button></div></div></section>
-<section id="records" class="view"><div class="hero"><h1>Daily Records</h1><p>Add results, scores and edit/delete saved records.</p></div><div class="card"><div class="form-grid"><div class="field"><label>Date</label><input type="date" id="recordDate"></div><div class="field"><label>Player</label><select id="recordPlayer"></select></div><div class="field"><label>Result</label><select id="recordResult"><option value="">Select</option><option>Win</option><option>Draw</option><option>Loss</option></select></div></div><br><div class="form-grid"><div class="field"><label>Player Score</label><input type="number" min="0" id="playerScore"></div><div class="field"><label>Opponent Score</label><input type="number" min="0" id="opponentScore"></div><div class="actions"><button class="btn" onclick="saveRecord()">💾 Save Record</button><button class="btn gray" onclick="clearRecordForm()">Clear</button></div></div><div id="recordMsg" class="message"></div></div><div class="card"><div class="actions" style="justify-content:space-between"><h2 style="margin:0">Record History</h2><div class="actions"><button class="btn secondary" onclick="loadRecords()">🔄 Refresh</button><button class="btn gray" onclick="loadAllRecords()">📋 All</button></div></div><br><div class="table-wrap"><table><thead><tr><th>Date</th><th>Player</th><th>Result</th><th>Score</th><th>Clean Sheet</th><th>Points</th><th>Actions</th></tr></thead><tbody id="recordsBody"></tbody></table></div></div></section>
-<section id="players" class="view"><div class="hero"><h1>Players</h1><p>Add, edit or remove players.</p></div><div class="card"><div class="form-grid"><div class="field"><label>Name</label><input id="pName"></div><div class="field"><label>Nick Name</label><input id="pNick"></div><div class="field"><label>Phone</label><input id="pPhone"></div></div><br><div class="field"><label>Photo URL</label><input id="pPhoto"></div><br><div class="actions"><button class="btn" onclick="savePlayer()">💾 Save Player</button><button class="btn gray" onclick="clearPlayerForm()">Clear</button></div><div id="playerMsg" class="message"></div></div><div class="card"><input class="field search" style="padding:11px 12px;border:1px solid #d0d5dd;border-radius:10px" id="playerSearch" placeholder="Search players..." oninput="renderPlayers()"><br><br><div class="table-wrap"><table><thead><tr><th>Name</th><th>Nick Name</th><th>Phone</th><th>Actions</th></tr></thead><tbody id="playersBody"></tbody></table></div></div></section>
-<section id="stats" class="view"><div class="hero"><h1>Player Statistics</h1><p>Automatic totals from match records.</p></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Player</th><th>Played</th><th>Wins</th><th>Draws</th><th>Losses</th><th>Points</th><th>Clean Sheets</th><th>GD</th></tr></thead><tbody id="statsBody"></tbody></table></div></div></section>
-<section id="leaderboard" class="view"><div class="hero"><h1>Leaderboard</h1><p>Ranked by points, then goal difference.</p></div><div class="card"><div class="table-wrap"><table><thead><tr><th>#</th><th>Player</th><th>Points</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>CS</th></tr></thead><tbody id="leaderBody"></tbody></table></div></div></section>
-<section id="staff" class="view"><div class="hero"><h1>Staff Management</h1><p>Admin-only staff accounts.</p></div><div class="card"><div class="form-grid"><div class="field"><label>Email</label><input id="sEmail" type="email"></div><div class="field"><label>Temporary Password</label><input id="sPassword" type="password"></div><button class="btn" onclick="createStaff()">➕ Add Staff</button></div><div id="staffMsg" class="message"></div></div><div class="card"><div class="table-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Created</th><th>Action</th></tr></thead><tbody id="staffBody"></tbody></table></div></div></section>
-</main><script src="assets/js/config.js"></script><script src="assets/js/auth.js"></script><script src="assets/js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Haveeru Kulhun Admin</title>
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>
+.record-player-row{display:grid;grid-template-columns:1fr 220px;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid #e5e7eb}
+.record-player-row:last-child{border-bottom:0}
+.record-player-name{font-weight:700}
+.result-select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:9px;font-size:15px}
+.score-section{display:none}
+.score-box{margin-top:14px;padding:16px;background:#f8fafc;border-radius:12px}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.info{background:#eff6ff;border-left:4px solid #2563eb;padding:12px;margin:14px 0;color:#1e40af;border-radius:6px}
+.apply-btn{width:100%;background:#16a34a;color:#fff;border:0;padding:14px;border-radius:9px;font-weight:700;font-size:16px;cursor:pointer;margin-top:18px}
+.apply-btn:hover{background:#15803d}
+@media(max-width:700px){.record-player-row,.score-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+<div class="brand">⚽ Haveeru Kulhun League <span id="role" class="small muted"></span></div>
+<nav class="nav">
+<button data-view="dashboard">🏠 Dashboard</button>
+<button data-view="records">➕ Daily Records</button>
+<button data-view="players">👤 Players</button>
+<button data-view="stats">📊 Statistics</button>
+<button data-view="leaderboard">🏆 Leaderboard</button>
+<button data-view="staff" id="staffNav" class="hidden">👥 Staff</button>
+<button class="logout" onclick="logout()">Logout</button>
+</nav>
+</div></header>
+
+<main class="wrap">
+
+<section id="dashboard" class="view active">
+<div class="hero"><h1>Dashboard</h1><p>League overview</p></div>
+<div class="grid">
+<div class="card stat"><div class="num" id="dPlayers">-</div><div class="label">Players</div></div>
+<div class="card stat"><div class="num" id="dRecords">-</div><div class="label">Match Records</div></div>
+<div class="card stat"><div class="num" id="dPoints">-</div><div class="label">Total Points</div></div>
+<div class="card stat"><div class="num" id="dClean">-</div><div class="label">Clean Sheets</div></div>
+</div>
+<div class="card"><h2>Quick Actions</h2><div class="actions">
+<button class="btn" onclick="showView('records')">➕ Add Daily Record</button>
+<button class="btn secondary" onclick="showView('players')">👤 Manage Players</button>
+<button class="btn secondary" onclick="showView('leaderboard')">🏆 View Leaderboard</button>
+</div></div>
+</section>
+
+<section id="records" class="view">
+<div class="hero"><h1>Daily Records</h1><p>Save player results first, then enter the match score for everyone.</p></div>
+
+<div class="card">
+<label>Date</label>
+<input type="date" id="matchDate" onchange="loadExistingRecords()">
+</div>
+
+<div class="card">
+<h2>Player Results</h2>
+<div class="info">Select Win, Draw or Loss for each player. Scores can be entered after saving the results.</div>
+<div id="playersList">Loading players...</div>
+<button class="btn" style="width:100%;margin-top:18px" onclick="saveDailyRecords()">💾 Save Daily Results</button>
+<div id="message" class="message"></div>
+</div>
+
+<div class="card score-section" id="scoreSection">
+<h2>Enter Daily Score</h2>
+<div class="info">Enter the score once and it will be applied to all players according to their selected result.</div>
+
+<div id="winLossBox" class="score-box" style="display:none">
+<h3>🟢 Win / 🔴 Loss Score</h3>
+<div class="score-grid">
+<div class="field"><label>Winning Score</label><input type="number" id="winningScore" min="0" placeholder="Example: 5"></div>
+<div class="field"><label>Losing Score</label><input type="number" id="losingScore" min="0" placeholder="Example: 2"></div>
+</div>
+</div>
+
+<div id="drawBox" class="score-box" style="display:none">
+<h3>🟡 Draw Score</h3>
+<div class="field"><label>Score for each side</label><input type="number" id="drawScore" min="0" placeholder="Example: 2"></div>
+<p class="small muted">Enter 0 for a 0–0 draw.</p>
+</div>
+
+<button class="apply-btn" onclick="applyDailyScore()">📊 Apply Score To All Players</button>
+<div id="scoreMessage" class="message"></div>
+</div>
+
+<div class="card">
+<div class="actions" style="justify-content:space-between">
+<h2 style="margin:0">Record History</h2>
+<div class="actions">
+<button class="btn secondary" onclick="loadHistory()">🔄 Refresh</button>
+<button class="btn gray" onclick="loadAllHistory()">📋 All</button>
+</div>
+</div>
+<br>
+<div class="table-wrap"><table>
+<thead><tr><th>Date</th><th>Player</th><th>Result</th><th>Score</th><th>Clean Sheet</th><th>Points</th><th>Actions</th></tr></thead>
+<tbody id="recordsBody"><tr><td colspan="7" class="empty">Loading records...</td></tr></tbody>
+</table></div>
+</div>
+</section>
+
+<section id="players" class="view">
+<div class="hero"><h1>Players</h1><p>Add, edit or remove players.</p></div>
+<div class="card">
+<div class="form-grid">
+<div class="field"><label>Name</label><input id="pName"></div>
+<div class="field"><label>Nick Name</label><input id="pNick"></div>
+<div class="field"><label>Phone</label><input id="pPhone"></div>
+</div><br>
+<div class="field"><label>Photo URL</label><input id="pPhoto"></div><br>
+<div class="actions"><button class="btn" onclick="savePlayer()">💾 Save Player</button><button class="btn gray" onclick="clearPlayerForm()">Clear</button></div>
+<div id="playerMsg" class="message"></div>
+</div>
+<div class="card">
+<input class="field search" style="padding:11px 12px;border:1px solid #d0d5dd;border-radius:10px" id="playerSearch" placeholder="Search players..." oninput="renderPlayers()">
+<br><br><div class="table-wrap"><table><thead><tr><th>Name</th><th>Nick Name</th><th>Phone</th><th>Actions</th></tr></thead><tbody id="playersBody"></tbody></table></div>
+</div>
+</section>
+
+<section id="stats" class="view">
+<div class="hero"><h1>Player Statistics</h1><p>Automatic totals from match records.</p></div>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>Player</th><th>Played</th><th>Wins</th><th>Draws</th><th>Losses</th><th>Points</th><th>Clean Sheets</th><th>GD</th></tr></thead><tbody id="statsBody"></tbody></table></div></div>
+</section>
+
+<section id="leaderboard" class="view">
+<div class="hero"><h1>Leaderboard</h1><p>Ranked by points, then goal difference.</p></div>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>#</th><th>Player</th><th>Points</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>CS</th></tr></thead><tbody id="leaderBody"></tbody></table></div></div>
+</section>
+
+<section id="staff" class="view">
+<div class="hero"><h1>Staff Management</h1><p>Admin-only staff accounts.</p></div>
+<div class="card">
+<div class="form-grid"><div class="field"><label>Email</label><input id="sEmail" type="email"></div><div class="field"><label>Temporary Password</label><input id="sPassword" type="password"></div><button class="btn" onclick="createStaff()">➕ Add Staff</button></div>
+<div id="staffMsg" class="message"></div>
+</div>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>Email</th><th>Role</th><th>Created</th><th>Action</th></tr></thead><tbody id="staffBody"></tbody></table></div></div>
+</section>
+
+</main>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
