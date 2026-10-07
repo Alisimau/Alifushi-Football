@@ -485,7 +485,80 @@ tbody tr:hover{
 
   gap:15px;
 }
+.last-month-section{
+  margin:20px 0 25px;
+}
 
+.last-month-card{
+  padding:20px;
+  text-align:center;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(251,191,36,.13),
+      rgba(255,255,255,.045)
+    );
+  border-color:rgba(251,191,36,.28);
+}
+
+.last-month-title{
+  font-size:20px;
+  font-weight:900;
+  margin-bottom:5px;
+}
+
+.last-month-subtitle{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:18px;
+}
+
+.last-month-winners{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.last-month-winner{
+  padding:15px;
+  border-radius:17px;
+  background:rgba(255,255,255,.055);
+  border:1px solid var(--line);
+}
+
+.last-month-winner.first{
+  border-color:rgba(251,191,36,.55);
+}
+
+.last-month-winner img{
+  width:75px;
+  height:75px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(255,255,255,.35);
+}
+
+.last-month-medal{
+  font-size:26px;
+  margin-bottom:6px;
+}
+
+.last-month-name{
+  font-weight:850;
+  margin-top:8px;
+}
+
+.last-month-points{
+  color:#7dd3fc;
+  font-size:13px;
+  margin-top:4px;
+}
+
+@media(max-width:700px){
+  .last-month-winners{
+    grid-template-columns:1fr;
+  }
+}
 .player-card{
   padding:17px;
   cursor:pointer;
@@ -1118,31 +1191,14 @@ footer{
 <body>
 
 <header>
-  <div class="container header-inner">
-
-    <div class="logo">
-      ⚽ Haveeru Kulhun League
-      <span>Public Player Statistics</span>
-    </div>
+ <div class="logo" onclick="showLeaderboard()" style="cursor:pointer;">
+  ⚽ Haveeru Kulhun League
+  <span>Public Player Statistics</span>
+</div>
 
     <nav class="nav">
-
-      <a href="#leaderboard"
-         onclick="showLeaderboard();return false;">
-        🏆 Point Table
-      </a>
-
-      <a href="#players"
-         onclick="showPlayers();return false;">
-        👤 Players
-      </a>
-
-      <a href="admin/index.html">
-        Staff Login
-      </a>
-
-    </nav>
-
+  <a href="#players" onclick="showPlayers();return false;">👤 Players</a>
+</nav>
   </div>
 </header>
 
@@ -1280,6 +1336,24 @@ footer{
     id="players"
     class="players">
   </section>
+  <div id="monthlyWinnerPanel" class="card monthly-winner-panel">
+  <div class="monthly-winner-title">
+    🏆 Monthly Winners
+  </div>
+
+  <div class="monthly-winner-controls">
+    <input
+      type="month"
+      id="winnerMonth"
+    >
+
+    <button onclick="showMonthlyWinners()">
+      Show Winners
+    </button>
+  </div>
+
+  <div id="monthlyWinnerResults"></div>
+</div>
 
 
   <!-- PLAYER PROFILE -->
@@ -2246,16 +2320,21 @@ function closeProfile(){
 ================================================== */
 
 function showPlayers(){
+  document.getElementById('topSection').style.display='none';
+  document.getElementById('leaderboard').style.display='none';
 
-  document
-    .getElementById(
-      "playersHeading"
-    )
-    .scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
+  document.getElementById('playersHeading').style.display='flex';
+  document.getElementById('players').style.display='grid';
 
+  document.getElementById('searchPanel').style.display='flex';
+  document.getElementById('monthlyWinnerPanel').style.display='block';
+
+  document.getElementById('profile').className='card profile';
+
+  document.getElementById('playersHeading').scrollIntoView({
+    behavior:'smooth',
+    block:'start'
+  });
 }
 
 
@@ -2264,21 +2343,29 @@ function showPlayers(){
 ================================================== */
 
 function showLeaderboard(){
+  document.getElementById('topSection').style.display='block';
+  document.getElementById('leaderboard').style.display='block';
+
+  document.getElementById('playersHeading').style.display='none';
+  document.getElementById('players').style.display='none';
+
+  document.getElementById('searchPanel').style.display='none';
+
+  const monthlyPanel=document.getElementById('monthlyWinnerPanel');
+  if(monthlyPanel){
+    monthlyPanel.style.display='none';
+  }
+
+  document.getElementById('profile').className='card profile';
+  document.getElementById('profile').innerHTML='';
 
   buildLeaderboard();
 
-
-  document
-    .getElementById(
-      "leaderboard"
-    )
-    .scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
 }
-
 
 /* ==================================================
    SECURITY / HTML ESCAPING
@@ -2314,8 +2401,100 @@ function escapeAttr(v){
 /* ==================================================
    START
 ================================================== */
+function getPreviousMonth(){
 
-load();
+  const now=new Date();
+
+  now.setDate(1);
+  now.setMonth(now.getMonth()-1);
+
+  const year=now.getFullYear();
+  const month=String(now.getMonth()+1).padStart(2,'0');
+
+  return `${year}-${month}`;
+}
+
+
+function renderLastMonthWinners(){
+
+  const container=
+    document.getElementById('lastMonthWinners');
+
+  if(!container) return;
+
+  const previousMonth=
+    getPreviousMonth();
+
+  const winners=
+    getMonthlyStats(previousMonth).slice(0,3);
+
+  if(!winners.length){
+    container.innerHTML='';
+    return;
+  }
+
+  const date=
+    new Date(previousMonth+'-01');
+
+  const monthName=
+    date.toLocaleDateString(
+      'en-US',
+      {
+        month:'long',
+        year:'numeric'
+      }
+    );
+
+  const medals=['🥇','🥈','🥉'];
+
+  container.innerHTML=`
+
+    <div class="card last-month-card">
+
+      <div class="last-month-title">
+        🏆 ${monthName} Winners
+      </div>
+
+      <div class="last-month-subtitle">
+        Top 3 players from last month
+      </div>
+
+      <div class="last-month-winners">
+
+        ${winners.map((x,i)=>`
+
+          <div class="last-month-winner ${i===0?'first':''}">
+
+            <div class="last-month-medal">
+              ${medals[i]}
+            </div>
+
+            <img
+              src="${escapeAttr(photoFor(x.player,140))}"
+              onerror="this.src='https://placehold.co/140x140?text=Player'"
+            >
+
+            <div class="last-month-name">
+              ${escapeHtml(x.player.Name||'')}
+            </div>
+
+            <div class="last-month-points">
+              ${x.points} Points
+            </div>
+
+          </div>
+
+        `).join('')}
+
+      </div>
+
+    </div>
+   `;
+}
+
+load().then(() => {
+  renderLastMonthWinners();
+});
 
 </script>
 
