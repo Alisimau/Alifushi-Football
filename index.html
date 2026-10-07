@@ -541,6 +541,15 @@ tbody tr:hover{
   padding:22px;
   margin-top:20px;
 }
+  /* PUBLIC TABS */
+#playersHeading,
+#players{
+  display:none;
+}
+
+#searchPanel{
+  display:none;
+}
 
 .profile.show{
   display:block;
@@ -1903,15 +1912,9 @@ function toggleSearch(){
 ================================================== */
 
 function showProfile(id){
+  showPlayers();
 
-  const p =
-    players.find(
-      x => x.id === id
-    );
-
-
-  if(!p)
-    return;
+  const p=players.find(x=>x.id===id); if(!p)return;
 
 
   const rs =
