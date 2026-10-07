@@ -32,7 +32,8 @@ async function loadPlayers(){
   const r=await api('/rest/v1/Players?select=id,Name,"Nick Name",Phone,Photo_url&order=Name.asc');
   players=Array.isArray(r)?r:[];
   renderPlayers();
-  renderRecordPlayers();
+  populateRecordPlayerSelect();
+  renderRecordPlayers(records);
  }catch(e){console.error(e);note('playerMsg',e.message,'error')}
 }
 
@@ -77,26 +78,30 @@ async function deletePlayer(id){
 
 function clearPlayerForm(){editingPlayerId=null;['pName','pNick','pPhone','pPhoto'].forEach(x=>{if($(x))$(x).value=''})}
 
-/* ===== DAILY RECORDS: multi-player workflow ===== */
+/* ===== DAILY RECORDS: select players individually ===== */
 
 function getResult(r){
  return r?.match_result||r?.result||'';
 }
 
+function populateRecordPlayerSelect(){
+ const sel=$('recordPlayer');if(!sel)return;
+ const current=sel.value;
+ sel.innerHTML='<option value="">Select player</option>'+players.map(p=>`<option value="${p.id}">${esc(p.Name||'Unknown')}${p['Nick Name']?' ('+esc(p['Nick Name'])+')':''}</option>`).join('');
+ if(players.some(p=>String(p.id)===String(current)))sel.value=current;
+}
+
 function renderRecordPlayers(existing=[]){
  const list=$('playersList');if(!list)return;
- if(!players.length){list.innerHTML='<div class="empty">No players registered yet.</div>';return}
- list.innerHTML=players.map(p=>{
-  const r=existing.find(x=>Number(x.player_id)===Number(p.id));
-  const result=getResult(r);
-  return `<div class="record-player-row">
-   <div class="record-player-name">${esc(p.Name||'Unknown')}</div>
-   <select class="result-select" data-player-id="${p.id}" onchange="updateScoreBoxes()">
-    <option value="">Select Result</option>
-    <option value="Win" ${result==='Win'?'selected':''}>🟢 Win</option>
-    <option value="Draw" ${result==='Draw'?'selected':''}>🟡 Draw</option>
-    <option value="Loss" ${result==='Loss'?'selected':''}>🔴 Loss</option>
-   </select>
+ if(!existing.length){list.innerHTML='<div class="empty">No players selected for this date yet.</div>';return}
+ list.innerHTML=existing.map(r=>{
+  const p=players.find(x=>Number(x.id)===Number(r.player_id));
+  return `<div class="selected-player-row">
+   <div><div class="record-player-name">${esc(p?.Name||'Unknown')}</div><span class="small muted">${esc(getResult(r))}${r.player_score!=null?' • '+r.player_score+' - '+r.opposition_score:''}</span></div>
+   <div class="actions">
+    <button class="btn secondary" onclick="editSelectedPlayer(${r.id})">✏️ Edit</button>
+    <button class="btn danger" onclick="deleteHistoryRecord(${r.id})">🗑️ Remove</button>
+   </div>
   </div>`;
  }).join('');
  updateScoreBoxes();
@@ -109,7 +114,6 @@ async function loadExistingRecords(){
   records=Array.isArray(r)?r:[];
   renderRecordPlayers(records);
   restoreScores(records);
-  renderHistory(records);
  }catch(e){console.error(e);note('message',e.message,'error')}
 }
 
@@ -122,47 +126,54 @@ function restoreScores(rs){
 }
 
 function updateScoreBoxes(){
- const selects=document.querySelectorAll('.result-select');
- let win=false,loss=false,draw=false;
- selects.forEach(s=>{if(s.value==='Win')win=true;if(s.value==='Loss')loss=true;if(s.value==='Draw')draw=true});
- $('winLossBox').style.display=(win||loss)?'block':'none';
- $('drawBox').style.display=draw?'block':'none';
- $('scoreSection').style.display=(win||loss||draw)?'block':'none';
+ const result=$('recordResult')?.value||'';
+ $('winLossBox').style.display=(result==='Win'||result==='Loss')?'block':'none';
+ $('drawBox').style.display=result==='Draw'?'block':'none';
+ $('scoreSection').style.display=result?'block':'none';
 }
 
-async function saveDailyRecords(){
+async function saveDailyRecord(){
  const date=$('matchDate').value;
+ const pid=$('recordPlayer').value;
+ const result=$('recordResult').value;
  if(!date){note('message','Please select a date.','error');return}
- const selected=[...document.querySelectorAll('.result-select')].filter(s=>s.value);
- if(!selected.length){note('message','Please select a result for at least one player.','error');return}
+ if(!pid){note('message','Please select a player.','error');return}
+ if(!result){note('message','Please select Win, Draw or Loss.','error');return}
  try{
-  for(const s of selected){
-   const pid=Number(s.dataset.playerId);
-   const existing=records.find(r=>Number(r.player_id)===pid);
-   const body={match_date:date,player_id:pid,match_result:s.value};
-   if(existing){
-    await api('/rest/v1/player_match_records?id=eq.'+existing.id,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
-   }else{
-    await api('/rest/v1/player_match_records',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
-   }
+  const existing=records.find(r=>Number(r.player_id)===Number(pid));
+  const body={match_date:date,player_id:Number(pid),match_result:result};
+  if(existing){
+   await api('/rest/v1/player_match_records?id=eq.'+existing.id,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
+  }else{
+   await api('/rest/v1/player_match_records',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)});
   }
-  note('message',selected.length+' player result(s) saved successfully. Now enter the score below.','success');
+  note('message', 'Player result saved. Select another player to add another result.','success');
+  $('recordPlayer').value='';
+  $('recordResult').value='';
   await loadExistingRecords();
-  updateScoreBoxes();
+  await loadHistory();
  }catch(e){console.error(e);note('message',e.message,'error')}
+}
+
+async function editSelectedPlayer(id){
+ const r=records.find(x=>Number(x.id)===Number(id));if(!r)return;
+ $('recordPlayer').value=String(r.player_id);
+ $('recordResult').value=getResult(r);
+ updateScoreBoxes();
+ document.querySelector('#records .card')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 async function applyDailyScore(){
  const date=$('matchDate').value;if(!date){note('scoreMessage','Please select a date.','error');return}
- const selects=[...document.querySelectorAll('.result-select')];
- const hasWin=selects.some(s=>s.value==='Win'),hasLoss=selects.some(s=>s.value==='Loss'),hasDraw=selects.some(s=>s.value==='Draw');
+ const rs=await api('/rest/v1/player_match_records?match_date=eq.'+encodeURIComponent(date)+'&select=*');
+ if(!Array.isArray(rs)||!rs.length){note('scoreMessage','No player records found for this date. Add players first.','error');return}
+ const results=[...new Set(rs.map(getResult).filter(Boolean))];
+ const hasWin=results.includes('Win'),hasLoss=results.includes('Loss'),hasDraw=results.includes('Draw');
  const win=$('winningScore').value,loss=$('losingScore').value,draw=$('drawScore').value;
  if((hasWin||hasLoss)&&(win===''||loss==='')){note('scoreMessage','Please enter the winning and losing scores.','error');return}
  if((hasWin||hasLoss)&&Number(win)<=Number(loss)){note('scoreMessage','Winning score must be greater than losing score.','error');return}
  if(hasDraw&&draw===''){note('scoreMessage','Please enter the draw score.','error');return}
  try{
-  const rs=await api('/rest/v1/player_match_records?match_date=eq.'+encodeURIComponent(date)+'&select=*');
-  if(!Array.isArray(rs)||!rs.length){note('scoreMessage','No player records found for this date. Save the results first.','error');return}
   for(const r of rs){
    const result=getResult(r);let ps=null,os=null;
    if(result==='Win'){ps=Number(win);os=Number(loss)}
