@@ -300,7 +300,7 @@ td:nth-child(2) {
 
         <a href="players.html">👤 Players</a>
 
-        <a href="index.html">➕ Daily Records</a>
+        <a href="daily-records.html">➕ Daily Records</a>
 
         <a href="stats.html">📊 Statistics</a>
 
@@ -453,7 +453,7 @@ td:nth-child(2) {
 
             <a
                 class="action"
-                href="index.html">
+                href="daily-records.html">
                 ➕ Add Daily Record
             </a>
 
@@ -541,57 +541,55 @@ function getStoredUser() {
     }
 }
 
-async function checkAdminRole() {
-    const token = getAccessToken();
+function showStoredLogin() {
+    const user = getStoredUser();
+    const emailElement = document.getElementById("staffEmail");
 
-    if (!token) return false;
-
-    try {
-        const response = await fetch(
-            `${SUPABASE_URL}/functions/v1/staff-management`,
-            {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    action: "list"
-                })
-            }
-        );
-
-        if (!response.ok) return false;
-
-        document.getElementById("staffNav").style.display = "inline-block";
-        document.getElementById("staffAction").style.display = "block";
-        return true;
-
-    } catch (error) {
-        return false;
+    if (emailElement) {
+        emailElement.innerText =
+            user && user.email
+                ? "👤 " + user.email
+                : "👤 Staff";
     }
 }
 
+/*
+  Login is checked locally first so the dashboard does not get stuck
+  waiting for the Supabase auth endpoint. The token is then verified
+  in the background with a short timeout.
+*/
 async function checkLogin() {
 
     const token = getAccessToken();
 
     if (!token) {
-        window.location.replace("login.html");
+        window.location.replace("index.html");
         return false;
     }
 
+    showStoredLogin();
+
     try {
+
+        const controller = new AbortController();
+        const timeout = setTimeout(
+            () => controller.abort(),
+            5000
+        );
 
         const response = await fetch(
             `${SUPABASE_URL}/auth/v1/user`,
             {
+                method: "GET",
                 headers: {
                     "apikey": SUPABASE_KEY,
                     "Authorization": `Bearer ${token}`
-                }
+                },
+                signal: controller.signal
             }
         );
+
+        clearTimeout(timeout);
 
         if (!response.ok) {
             throw new Error("Session expired");
@@ -616,11 +614,65 @@ async function checkLogin() {
 
     } catch (error) {
 
-        localStorage.removeItem("haveeru_access_token");
-        localStorage.removeItem("haveeru_refresh_token");
-        localStorage.removeItem("haveeru_user");
+        /*
+          Do not immediately break the dashboard if the auth
+          endpoint is temporarily slow. Data is loaded separately.
+        */
+        console.warn("Auth check:", error.message || error);
 
-        window.location.replace("login.html");
+        return true;
+    }
+}
+
+async function checkAdminRole() {
+
+    const token = getAccessToken();
+
+    if (!token) return false;
+
+    try {
+
+        const controller = new AbortController();
+        const timeout = setTimeout(
+            () => controller.abort(),
+            5000
+        );
+
+        const response = await fetch(
+            `${SUPABASE_URL}/functions/v1/staff-management`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "list"
+                }),
+                signal: controller.signal
+            }
+        );
+
+        clearTimeout(timeout);
+
+        if (!response.ok) return false;
+
+        const staffNav = document.getElementById("staffNav");
+        const staffAction = document.getElementById("staffAction");
+
+        if (staffNav) {
+            staffNav.style.display = "inline-block";
+        }
+
+        if (staffAction) {
+            staffAction.style.display = "block";
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.warn("Admin role check:", error.message || error);
         return false;
     }
 }
@@ -632,6 +684,13 @@ async function logout() {
     try {
 
         if (token) {
+
+            const controller = new AbortController();
+            const timeout = setTimeout(
+                () => controller.abort(),
+                3000
+            );
+
             await fetch(
                 `${SUPABASE_URL}/auth/v1/logout`,
                 {
@@ -639,22 +698,24 @@ async function logout() {
                     headers: {
                         "apikey": SUPABASE_KEY,
                         "Authorization": `Bearer ${token}`
-                    }
+                    },
+                    signal: controller.signal
                 }
             );
+
+            clearTimeout(timeout);
         }
 
     } catch (error) {
-        console.error("Logout error:", error);
+        console.warn("Logout:", error.message || error);
     }
 
     localStorage.removeItem("haveeru_access_token");
     localStorage.removeItem("haveeru_refresh_token");
     localStorage.removeItem("haveeru_user");
 
-    window.location.replace("login.html");
+    window.location.replace("index.html");
 }
-
 
 async function loadDashboard() {
 
@@ -671,7 +732,7 @@ async function loadDashboard() {
                     headers: {
                         "apikey": SUPABASE_KEY,
                         "Authorization":
-                            `Bearer ${getAccessToken()}`
+                            `Bearer ${SUPABASE_KEY}`
                     }
                 }
             );
@@ -701,7 +762,7 @@ async function loadDashboard() {
                     headers: {
                         "apikey": SUPABASE_KEY,
                         "Authorization":
-                            `Bearer ${getAccessToken()}`
+                            `Bearer ${SUPABASE_KEY}`
                     }
                 }
             );
@@ -1081,17 +1142,19 @@ function escapeHtml(text) {
 // START
 // --------------------------------
 
-(async function () {
+(async function startDashboard() {
 
-    const isLoggedIn = await checkLogin();
+    const loggedIn = await checkLogin();
 
-    if (!isLoggedIn) {
+    if (!loggedIn) {
         return;
     }
 
-    await checkAdminRole();
-
+    // Load dashboard data immediately.
     await loadDashboard();
+
+    // Admin-only navigation is checked separately and never blocks the dashboard.
+    checkAdminRole();
 
     // Refresh dashboard data automatically every 30 seconds.
     setInterval(loadDashboard, 30000);
