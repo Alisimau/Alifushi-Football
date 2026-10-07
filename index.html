@@ -7,98 +7,123 @@
 <title>Haveeru Kulhun League — Player Stats</title>
 <style>
 :root{
-  --line:rgba(255,255,255,.20);
-  --muted:rgba(226,232,240,.72);
+  --bg:#050b14;--card:rgba(13,23,38,.72);--line:rgba(255,255,255,.14);
+  --muted:rgba(226,232,240,.70);--accent:#38bdf8;--gold:#fbbf24;
 }
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{
   margin:0;min-height:100vh;color:#f8fafc;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   background:
-    radial-gradient(circle at 10% 10%,rgba(56,189,248,.28),transparent 32%),
-    radial-gradient(circle at 90% 20%,rgba(139,92,246,.30),transparent 30%),
-    radial-gradient(circle at 50% 100%,rgba(14,165,233,.20),transparent 35%),
-    linear-gradient(135deg,#07111f,#0b1220 48%,#111827);
+    radial-gradient(circle at 10% 5%,rgba(14,165,233,.20),transparent 30%),
+    radial-gradient(circle at 90% 15%,rgba(124,58,237,.20),transparent 30%),
+    linear-gradient(135deg,#050b14,#0a1322 50%,#0d1728);
   background-attachment:fixed;
 }
 body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;
   background-image:radial-gradient(rgba(255,255,255,.14) 1px,transparent 1px);
   background-size:24px 24px;
 }
-.container{width:min(1100px,92%);margin:auto}
+.container{width:min(1180px,92%);margin:auto}
 header{
-  position:sticky;top:0;z-index:10;
-  background:rgba(15,23,42,.48);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(25px) saturate(150%);
-  -webkit-backdrop-filter:blur(25px) saturate(150%);
+  position:sticky;top:0;z-index:50;background:rgba(5,11,20,.72);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(22px) saturate(150%);
 }
-.header-inner{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 0}
-.logo{font-size:20px;font-weight:800}
-.logo span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
-.nav{display:flex;gap:8px;flex-wrap:wrap}
-.nav a{
-  color:#fff;text-decoration:none;padding:9px 13px;border-radius:12px;
-  background:rgba(255,255,255,.08);border:1px solid var(--line);
-}
-.hero{text-align:center;padding:52px 0 28px}
-.hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 10px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:13px 0}
+.logo{font-size:19px;font-weight:850;letter-spacing:.1px}
+.logo span{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+.nav{display:flex;gap:7px;flex-wrap:wrap}
+.nav a{color:#fff;text-decoration:none;padding:8px 11px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:13px}
+.nav a:hover{background:rgba(255,255,255,.13)}
+
+.hero-banner{margin:22px 0 24px;position:relative;overflow:hidden;border-radius:26px;border:1px solid var(--line);box-shadow:0 25px 70px rgba(0,0,0,.32);background:#08111d}
+.hero-banner img{display:block;width:100%;height:auto;aspect-ratio:1920/700;object-fit:cover}
+.hero-banner:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.18),transparent 55%,rgba(0,0,0,.18))}
+.hero{padding:10px 0 20px;text-align:center}
+.hero h1{font-size:clamp(29px,5vw,48px);margin:0 0 8px}
 .hero p{color:var(--muted);margin:0}
+
 .card{
-  background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.065));
+  background:linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.045));
   border:1px solid var(--line);border-radius:22px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 20px 55px rgba(0,0,0,.20);
-  backdrop-filter:blur(24px) saturate(150%);
-  -webkit-backdrop-filter:blur(24px) saturate(150%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 20px 55px rgba(0,0,0,.18);
+  backdrop-filter:blur(20px) saturate(145%);-webkit-backdrop-filter:blur(20px) saturate(145%);
 }
-.search{padding:18px;margin-bottom:20px}
-input{
-  width:100%;padding:14px 16px;border-radius:14px;
-  border:1px solid var(--line);background:rgba(255,255,255,.09);
-  color:#fff;outline:none;font-size:16px;
-}
-input::placeholder{color:rgba(226,232,240,.55)}
-.status{padding:12px 4px;color:var(--muted);font-size:14px}
-.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
-.player-card{padding:18px;cursor:pointer;transition:.2s}
-.player-card:hover{transform:translateY(-3px);background:rgba(255,255,255,.16)}
-.player-top{display:flex;align-items:center;gap:14px}
-.avatar{
-  width:62px;height:62px;border-radius:50%;object-fit:cover;
-  border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1)
-}
-.player-name{font-size:19px;font-weight:800}
-.nickname{color:var(--muted);font-size:14px;margin-top:3px}
-.tap{margin-top:15px;color:#7dd3fc;font-size:13px}
+.search-panel{position:fixed;right:18px;top:76px;z-index:45;display:flex;align-items:center;gap:7px}
+.search-toggle{width:42px;height:42px;border-radius:50%;font-size:18px;padding:0;background:rgba(8,17,29,.86);box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.search-box{width:0;opacity:0;overflow:hidden;transition:.25s ease}
+.search-panel.open .search-box{width:min(300px,62vw);opacity:1}
+.search-box input{width:100%;padding:11px 14px;border-radius:13px;border:1px solid var(--line);background:rgba(8,17,29,.94);color:#fff;outline:none;font-size:14px}
+.status{color:var(--muted);font-size:13px;margin:0 0 12px}
+
+.section-title{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:30px 0 13px}
+.section-title h2{margin:0;font-size:22px}
+.section-title p{margin:0;color:var(--muted);font-size:13px}
+
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.podium-card{position:relative;padding:18px;text-align:center;overflow:hidden;animation:podiumFloat 4s ease-in-out infinite}
+.podium-card:nth-child(2){animation-delay:.45s}.podium-card:nth-child(3){animation-delay:.9s}
+.podium-card:before{content:"";position:absolute;inset:-80px;background:radial-gradient(circle,rgba(56,189,248,.13),transparent 58%);pointer-events:none}
+.podium-rank{font-size:27px;margin-bottom:7px}
+.podium-card:first-child{border-color:rgba(251,191,36,.38)}
+.podium-photo{width:92px;height:92px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.35);animation:photoPulse 3.2s ease-in-out infinite;box-shadow:0 0 0 6px rgba(255,255,255,.035)}
+.podium-name{font-weight:850;font-size:17px;margin-top:10px}
+.podium-nick{color:var(--muted);font-size:12px;margin-top:3px}
+.podium-points{font-size:27px;font-weight:900;margin-top:9px}
+.podium-points small{font-size:11px;color:var(--muted);font-weight:600}
+
+.table-card{padding:0;overflow:hidden}
+.table-head{padding:18px 18px 4px}
+.table-head h2{margin:0 0 4px}
+.table-head p{margin:0;color:var(--muted);font-size:13px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{padding:12px 11px;border-bottom:1px solid rgba(255,255,255,.09);text-align:left;white-space:nowrap}
+th{color:#bae6fd;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tbody tr:hover{background:rgba(255,255,255,.045)}
+.rank{font-weight:900;width:45px}
+.player-cell{display:flex;align-items:center;gap:10px;min-width:190px}
+.table-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.22);animation:photoPulse 3.6s ease-in-out infinite}
+.player-link{font-weight:800;cursor:pointer}
+.gd-positive{color:#86efac;font-weight:800}.gd-negative{color:#fca5a5;font-weight:800}.gd-zero{color:#fde68a;font-weight:800}
+.points{font-weight:900;color:#fff}
+.medal{font-size:19px}
+
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.player-card{padding:17px;cursor:pointer;transition:.2s}
+.player-card:hover{transform:translateY(-4px);background:rgba(255,255,255,.13)}
+.player-top{display:flex;align-items:center;gap:13px}
+.avatar{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.3);animation:photoPulse 3.8s ease-in-out infinite}
+.player-name{font-size:18px;font-weight:850}.nickname{color:var(--muted);font-size:13px;margin-top:3px}
+.tap{margin-top:13px;color:#7dd3fc;font-size:12px}
+
 .profile{display:none;padding:22px;margin-top:20px}
 .profile.show{display:block}
 .profile-head{display:flex;gap:18px;align-items:center}
-.profile-head img{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--line)}
+.profile-head img{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--line);animation:photoPulse 3s ease-in-out infinite}
 .profile h2{margin:0 0 4px}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:22px 0}
-.stat{
-  padding:17px;border:1px solid var(--line);border-radius:16px;
-  background:rgba(255,255,255,.07);text-align:center
-}
-.stat strong{display:block;font-size:28px}
-.stat span{font-size:12px;color:var(--muted)}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:650px}
-th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
-th{color:#bae6fd;font-size:13px}
-.result{font-weight:800}
-.win{color:#86efac}.draw{color:#fde68a}.loss{color:#fca5a5}
-button{
-  border:1px solid var(--line);border-radius:12px;padding:10px 14px;
-  background:rgba(255,255,255,.10);color:#fff;cursor:pointer
-}
+.stat{padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.06);text-align:center}
+.stat strong{display:block;font-size:27px}.stat span{font-size:12px;color:var(--muted)}
+button{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:rgba(255,255,255,.09);color:#fff;cursor:pointer}
+button:hover{background:rgba(255,255,255,.15)}
 footer{text-align:center;color:var(--muted);padding:35px 0}
-@media(max-width:600px){
+
+@keyframes photoPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(56,189,248,0)}50%{transform:scale(1.035);box-shadow:0 0 0 5px rgba(56,189,248,.06)}}
+@keyframes podiumFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+@media(max-width:700px){
   .header-inner{align-items:flex-start;flex-direction:column}
-  .nav{width:100%}.nav a{flex:1;text-align:center;font-size:13px}
-  .hero{padding:38px 0 22px}
-  .profile-head{align-items:flex-start}
+  .nav{width:100%}.nav a{flex:1;text-align:center;font-size:12px}
+  .hero-banner{margin-top:15px;border-radius:19px}
+  .podium{grid-template-columns:1fr}
+  .podium-card{display:grid;grid-template-columns:70px 1fr auto;align-items:center;text-align:left;gap:10px;padding:13px}
+  .podium-photo{width:62px;height:62px;grid-row:1/4}
+  .podium-rank{margin:0}.podium-name{margin:0}.podium-points{margin:0}
+  .podium-nick{margin:0}
+  .search-panel{top:68px;right:12px}
 }
 </style>
 </head>
@@ -109,40 +134,62 @@ footer{text-align:center;color:var(--muted);padding:35px 0}
     <nav class="nav">
       <a href="#leaderboard" onclick="showLeaderboard();return false;">🏆 Point Table</a>
       <a href="#players" onclick="showPlayers();return false;">👤 Players</a>
-      <a href="admin.html">Staff Login</a>
+      <a href="admin/index.html">Staff Login</a>
     </nav>
   </div>
 </header>
 
+<div class="search-panel" id="searchPanel">
+  <div class="search-box">
+    <input id="searchInput" placeholder="Search player..." oninput="filterPlayers()">
+  </div>
+  <button class="search-toggle" onclick="toggleSearch()" aria-label="Search players">🔎</button>
+</div>
+
 <main class="container">
+  <section class="hero-banner">
+    <img src="assets/haveeru-kulhun-banner.jpg" alt="Haveeru Kulhun League">
+  </section>
+
   <section class="hero">
-    <h1>Player Statistics</h1>
-    <p>Search a player to view their latest league statistics and match history.</p>
+    <h1>Haveeru Kulhun League</h1>
+    <p>Player performance • Match results • League standings</p>
   </section>
 
-  <section class="card search">
-    <input id="searchInput" placeholder="🔎 Search player name or nickname..." oninput="filterPlayers()">
-    <div id="status" class="status">Loading players...</div>
+  <div id="status" class="status">Loading player data...</div>
+
+  <section id="topSection">
+    <div class="section-title">
+      <h2>🏆 Top 3 Players</h2>
+      <p>Current league leaders</p>
+    </div>
+    <div id="podium" class="podium"></div>
   </section>
 
-  <section id="leaderboard" class="card profile show">
-    <h2>🏆 Point Table</h2>
-    <p style="color:var(--muted);margin-top:-8px">Current league standings</p>
+  <section id="leaderboard" class="card table-card">
+    <div class="table-head">
+      <h2>🏆 League Table</h2>
+      <p>Ranked by points, wins and clean sheets</p>
+    </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>#</th><th>Player</th><th>Matches</th><th>W</th><th>D</th><th>L</th><th>Clean Sheets</th><th>Points</th></tr></thead>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>CS</th><th>Points</th>
+        </tr></thead>
         <tbody id="leaderboardBody"></tbody>
       </table>
     </div>
   </section>
 
-  <h2 style="margin:30px 0 14px">👤 Players</h2>
+  <div class="section-title" id="playersHeading">
+    <h2>👤 Players</h2><p>Tap a player to view detailed statistics</p>
+  </div>
   <section id="players" class="players"></section>
 
   <section id="profile" class="card profile"></section>
 </main>
 
-<footer>Haveeru Kulhun League</footer>
+<footer>Haveeru Kulhun League • Alifushi Football</footer>
 
 <script>
 const SUPABASE_URL = "https://yafowakgpjvzapmejptn.supabase.co";
@@ -152,11 +199,8 @@ let players = [];
 let records = [];
 
 async function api(path){
-  const r = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
-    headers:{
-      apikey:SUPABASE_KEY,
-      Authorization:"Bearer " + SUPABASE_KEY
-    }
+  const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
+    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY}
   });
   if(!r.ok) throw new Error(await r.text());
   return r.json();
@@ -164,37 +208,96 @@ async function api(path){
 
 async function load(){
   try{
-    [players,records] = await Promise.all([
+    [players,records]=await Promise.all([
       api('Players?select=id,Name,"Nick Name",Photo_url&order=Name.asc'),
       api('player_match_records?select=*&order=match_date.desc')
     ]);
     renderPlayers(players);
     buildLeaderboard();
-    document.getElementById('status').textContent = `${players.length} players available`;
+    document.getElementById('status').textContent=`${players.length} players available`;
   }catch(e){
-    document.getElementById('status').textContent = "Unable to load player data. Check your Supabase publishable key.";
+    document.getElementById('status').textContent="Unable to load player data. Check your Supabase connection.";
     console.error(e);
   }
+}
+
+function resultFor(r){
+  return r.match_result || (
+    r.player_score!=null && r.opposition_score!=null
+      ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw')
+      : ''
+  );
+}
+
+function statsForPlayer(id){
+  const rs=records.filter(r=>Number(r.player_id)===Number(id));
+  const x={matches:rs.length,wins:0,draws:0,losses:0,clean:0,points:0,gd:0};
+  rs.forEach(r=>{
+    const result=resultFor(r);
+    if(result==='Win')x.wins++;
+    if(result==='Draw')x.draws++;
+    if(result==='Loss')x.losses++;
+    if(r.clean_sheet)x.clean++;
+    x.points+=Number(r.points||0);
+    if(r.player_score!=null && r.opposition_score!=null)
+      x.gd+=Number(r.player_score)-Number(r.opposition_score);
+  });
+  return x;
+}
+
+function photoFor(p, size=120){
+  return p.Photo_url || `https://placehold.co/${size}x${size}?text=Player`;
+}
+
+function buildLeaderboard(){
+  const rows=players.map(p=>({player:p,...statsForPlayer(p.id)}));
+  rows.sort((a,b)=>b.points-a.points||b.wins-a.wins||b.gd-a.gd||b.clean-a.clean||String(a.player.Name||'').localeCompare(String(b.player.Name||'')));
+
+  const body=document.getElementById('leaderboardBody');
+  body.innerHTML=rows.map((x,i)=>{
+    const gdClass=x.gd>0?'gd-positive':x.gd<0?'gd-negative':'gd-zero';
+    const medal=i<3?['🥇','🥈','🥉'][i]:'';
+    return `<tr>
+      <td class="rank">${medal||i+1}</td>
+      <td><div class="player-cell">
+        <img class="table-avatar" src="${escapeAttr(photoFor(x.player,90))}" onerror="this.src='https://placehold.co/90x90?text=Player'">
+        <span class="player-link" onclick="showProfile(${x.player.id})">${escapeHtml(x.player.Name||'')}</span>
+      </div></td>
+      <td>${x.matches}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td>
+      <td class="${gdClass}">${x.gd>0?'+':''}${x.gd}</td>
+      <td>${x.clean}</td><td class="points">${x.points}</td>
+    </tr>`;
+  }).join('');
+
+  renderPodium(rows.slice(0,3));
+}
+
+function renderPodium(top){
+  const box=document.getElementById('podium');
+  if(!top.length){box.innerHTML='<div class="card" style="padding:20px">No player results yet.</div>';return;}
+  box.innerHTML=top.map((x,i)=>`
+    <div class="card podium-card">
+      <div class="podium-rank">${['🥇','🥈','🥉'][i]}</div>
+      <img class="podium-photo" src="${escapeAttr(photoFor(x.player,160))}" onerror="this.src='https://placehold.co/160x160?text=Player'">
+      <div>
+        <div class="podium-name">${escapeHtml(x.player.Name||'')}</div>
+        <div class="podium-nick">${escapeHtml(x.player['Nick Name']||'')}</div>
+      </div>
+      <div class="podium-points">${x.points} <small>PTS</small></div>
+    </div>`).join('');
 }
 
 function renderPlayers(list){
   const box=document.getElementById('players');
   box.innerHTML='';
-  if(!list.length){
-    box.innerHTML='<div class="card" style="padding:20px">No players found.</div>';
-    return;
-  }
+  if(!list.length){box.innerHTML='<div class="card" style="padding:20px">No players found.</div>';return;}
   list.forEach(p=>{
     const div=document.createElement('div');
     div.className='card player-card';
-    const photo=p.Photo_url || 'https://placehold.co/120x120?text=Player';
     div.innerHTML=`
       <div class="player-top">
-        <img class="avatar" src="${escapeAttr(photo)}" onerror="this.src='https://placehold.co/120x120?text=Player'">
-        <div>
-          <div class="player-name">${escapeHtml(p.Name || '')}</div>
-          <div class="nickname">${escapeHtml(p['Nick Name'] || '')}</div>
-        </div>
+        <img class="avatar" src="${escapeAttr(photoFor(p))}" onerror="this.src='https://placehold.co/120x120?text=Player'">
+        <div><div class="player-name">${escapeHtml(p.Name||'')}</div><div class="nickname">${escapeHtml(p['Nick Name']||'')}</div></div>
       </div>
       <div class="tap">Tap to view statistics →</div>`;
     div.onclick=()=>showProfile(p.id);
@@ -204,27 +307,21 @@ function renderPlayers(list){
 
 function filterPlayers(){
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
-  renderPlayers(players.filter(p=>
-    (p.Name||'').toLowerCase().includes(q) ||
-    (p['Nick Name']||'').toLowerCase().includes(q)
-  ));
+  renderPlayers(players.filter(p=>(p.Name||'').toLowerCase().includes(q)||(p['Nick Name']||'').toLowerCase().includes(q)));
+  document.getElementById('playersHeading').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function toggleSearch(){
+  const panel=document.getElementById('searchPanel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')) document.getElementById('searchInput').focus();
 }
 
 function showProfile(id){
-  const p=players.find(x=>x.id===id);
-  if(!p)return;
+  const p=players.find(x=>x.id===id); if(!p)return;
   const rs=records.filter(r=>Number(r.player_id)===Number(id));
-  let matches=rs.length,wins=0,draws=0,losses=0,points=0,goals=0,clean=0;
-  rs.forEach(r=>{
-    const result=r.match_result || (r.player_score!=null&&r.opposition_score!=null ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw') : '');
-    if(result==='Win')wins++;
-    if(result==='Draw')draws++;
-    if(result==='Loss')losses++;
-    points += Number(r.points||0);
-    if(r.player_score!=null)goals += Number(r.player_score);
-    if(r.clean_sheet)clean++;
-  });
-  const photo=p.Photo_url || 'https://placehold.co/180x180?text=Player';
+  const s=statsForPlayer(id);
+  const photo=photoFor(p,180);
   const profile=document.getElementById('profile');
   profile.className='card profile show';
   profile.innerHTML=`
@@ -234,63 +331,39 @@ function showProfile(id){
       <div><h2>${escapeHtml(p.Name||'')}</h2><div style="color:var(--muted)">${escapeHtml(p['Nick Name']||'')}</div></div>
     </div>
     <div class="stats-grid">
-      <div class="stat"><strong>${matches}</strong><span>Matches</span></div>
-      <div class="stat"><strong>${wins}</strong><span>Wins</span></div>
-      <div class="stat"><strong>${draws}</strong><span>Draws</span></div>
-      <div class="stat"><strong>${losses}</strong><span>Losses</span></div>
-      <div class="stat"><strong>${points}</strong><span>Points</span></div>
-      <div class="stat"><strong>${clean}</strong><span>Clean Sheets</span></div>
+      <div class="stat"><strong>${s.matches}</strong><span>Matches</span></div>
+      <div class="stat"><strong>${s.wins}</strong><span>Wins</span></div>
+      <div class="stat"><strong>${s.draws}</strong><span>Draws</span></div>
+      <div class="stat"><strong>${s.losses}</strong><span>Losses</span></div>
+      <div class="stat"><strong>${s.gd>0?'+':''}${s.gd}</strong><span>Goal Difference</span></div>
+      <div class="stat"><strong>${s.points}</strong><span>Points</span></div>
+      <div class="stat"><strong>${s.clean}</strong><span>Clean Sheets</span></div>
     </div>
     <h3>Match History</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Date</th><th>Score</th><th>Result</th><th>Clean Sheet</th><th>Points</th></tr></thead>
-        <tbody>
-        ${rs.length ? rs.map(r=>{
-          const result=r.match_result || (r.player_score!=null&&r.opposition_score!=null ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw') : '-');
-          const cls=result.toLowerCase();
-          const score=(r.player_score==null||r.opposition_score==null)?'-':`${r.player_score} - ${r.opposition_score}`;
-          return `<tr><td>${r.match_date||''}</td><td>${score}</td><td class="result ${cls}">${result}</td><td>${r.clean_sheet?'✓':'—'}</td><td>${r.points??0}</td></tr>`;
-        }).join('') : '<tr><td colspan="5">No match records yet.</td></tr>'}
-        </tbody>
-      </table>
-    </div>`;
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Score</th><th>Result</th><th>Clean Sheet</th><th>GD</th><th>Points</th></tr></thead>
+      <tbody>
+      ${rs.length?rs.map(r=>{
+        const result=resultFor(r);
+        const cls=result.toLowerCase();
+        const score=(r.player_score==null||r.opposition_score==null)?'-':`${r.player_score} - ${r.opposition_score}`;
+        const gd=(r.player_score==null||r.opposition_score==null)?'-':(Number(r.player_score)-Number(r.opposition_score));
+        return `<tr><td>${r.match_date||''}</td><td>${score}</td><td class="result ${cls}">${result||'-'}</td><td>${r.clean_sheet?'✓':'—'}</td><td>${gd}</td><td>${r.points??0}</td></tr>`;
+      }).join(''):'<tr><td colspan="6">No match records yet.</td></tr>'}
+      </tbody>
+    </table></div>`;
   profile.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function closeProfile(){
-  const p=document.getElementById('profile');
-  p.className='card profile';
-  p.innerHTML='';
+  const p=document.getElementById('profile');p.className='card profile';p.innerHTML='';
 }
-
 function showPlayers(){
-  document.getElementById('leaderboard').className='card profile';
-  document.getElementById('players').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('playersHeading').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function showLeaderboard(){
   buildLeaderboard();
-  document.getElementById('leaderboard').className='card profile show';
   document.getElementById('leaderboard').scrollIntoView({behavior:'smooth',block:'start'});
-}
-function buildLeaderboard(){
-  const map={};
-  players.forEach(p=>map[p.id]={player:p,matches:0,wins:0,draws:0,losses:0,clean:0,points:0});
-  records.forEach(r=>{
-    if(!map[r.player_id])return;
-    const x=map[r.player_id];
-    x.matches++;
-    const result=r.match_result || (r.player_score!=null&&r.opposition_score!=null ? (r.player_score>r.opposition_score?'Win':r.player_score<r.opposition_score?'Loss':'Draw') : '');
-    if(result==='Win')x.wins++;
-    if(result==='Draw')x.draws++;
-    if(result==='Loss')x.losses++;
-    if(r.clean_sheet)x.clean++;
-    x.points += Number(r.points||0);
-  });
-  const rows=Object.values(map).sort((a,b)=>b.points-a.points||b.wins-a.wins||b.clean-a.clean);
-  document.getElementById('leaderboardBody').innerHTML=rows.map((x,i)=>`
-    <tr><td>${i+1}</td><td><strong>${escapeHtml(x.player.Name||'')}</strong></td><td>${x.matches}</td><td>${x.wins}</td><td>${x.draws}</td><td>${x.losses}</td><td>${x.clean}</td><td><strong>${x.points}</strong></td></tr>
-  `).join('');
 }
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 function escapeAttr(v){return escapeHtml(v);}
