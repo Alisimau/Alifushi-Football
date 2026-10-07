@@ -8,7 +8,7 @@
 <style>
 .record-player-row{display:grid;grid-template-columns:1fr 220px;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid #e5e7eb}
 .record-player-row:last-child{border-bottom:0}
-.record-player-name{font-weight:700}
+.record-player-name{font-weight:700}.selected-player-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb}.selected-player-row:last-child{border-bottom:0}
 .result-select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:9px;font-size:15px}
 .score-section{display:none}
 .score-box{margin-top:14px;padding:16px;background:#f8fafc;border-radius:12px}
@@ -59,11 +59,19 @@
 </div>
 
 <div class="card">
-<h2>Player Results</h2>
-<div class="info">Select Win, Draw or Loss for each player. Scores can be entered after saving the results.</div>
-<div id="playersList">Loading players...</div>
-<button class="btn" style="width:100%;margin-top:18px" onclick="saveDailyRecords()">💾 Save Daily Results</button>
+<h2>Player Result</h2>
+<div class="info">Select one player, choose Win, Draw or Loss, then save. Add as many players as needed for the selected date.</div>
+<div class="form-grid">
+<div class="field"><label>Select Player</label><select id="recordPlayer" onchange="updateScoreBoxes()"><option value="">Select player</option></select></div>
+<div class="field"><label>Result</label><select id="recordResult" onchange="updateScoreBoxes()"><option value="">Select result</option><option value="Win">🟢 Win</option><option value="Draw">🟡 Draw</option><option value="Loss">🔴 Loss</option></select></div>
+</div>
+<button class="btn" style="width:100%;margin-top:18px" onclick="saveDailyRecord()">💾 Save Player Result</button>
 <div id="message" class="message"></div>
+</div>
+
+<div class="card">
+<h2>Selected Players for This Date</h2>
+<div id="playersList"><div class="empty">No players selected yet.</div></div>
 </div>
 
 <div class="card score-section" id="scoreSection">
