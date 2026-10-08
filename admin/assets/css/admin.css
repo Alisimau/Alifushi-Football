@@ -16,3 +16,260 @@ button,.btn{border:1px solid rgba(255,255,255,.1);border-radius:12px;cursor:poin
 @media(max-width:700px){header,.topbar,.header,nav,.nav,main,.wrap,.container,footer,.portal-footer{width:calc(100% - 18px)}header,.topbar,.header{margin-top:9px;padding:15px;border-radius:19px}nav,.nav{top:7px;padding:5px;margin:9px auto;border-radius:15px}.navin{overflow:auto;scrollbar-width:none}.navin::-webkit-scrollbar{display:none}nav button,.nav button,.nav a,.navin button{padding:9px 11px;font-size:11px;border-radius:11px}main,.wrap,.container{margin-bottom:30px}.hero,.dashboard-head{padding:20px 17px;border-radius:19px}.hero h1,.dashboard-head h1{font-size:27px}.card,.box{padding:16px;border-radius:18px}.cards,.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.cards .card,.cards .stat,.stat{min-height:105px;padding:14px;border-radius:17px}.cards .value,.stat strong{font-size:24px}.form-grid,.formgrid{grid-template-columns:1fr;gap:12px}.form-grid .full,.formgrid .full{grid-column:auto}.podium{grid-template-columns:1fr;gap:9px}.podium-card,.top-card{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:8px;padding:11px;text-align:left}.podium-photo{width:52px;height:52px;grid-row:1/4;margin:0}.podium-points,.top-points{margin:0;font-size:22px}.table-wrap{border-radius:13px}table{min-width:620px}th{padding:9px 8px;font-size:9px}td{padding:9px 8px;font-size:11px}.actions .btn,.actions button{flex:1 1 auto}}
 @media(max-width:430px){.cards,.stats-grid{grid-template-columns:1fr 1fr}.cards .value,.stat strong{font-size:21px}.cards .label,.stat small{font-size:8px}.hero h1,.dashboard-head h1{font-size:24px}.card h2,.box h2{font-size:17px}.btn{padding:10px 11px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* =====================================================
+   MOBILE ADMIN - CLEAN PHONE LAYOUT
+===================================================== */
+
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  padding:0;
+}
+
+.container,
+.main,
+.content,
+.page,
+.wrap{
+  width:100%;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.topbar,
+.header,
+.topbar-inner,
+.header-inner{
+  width:100%;
+  max-width:100%;
+}
+
+.nav{
+  width:100%;
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+
+.nav a,
+.nav button{
+  width:100%;
+  min-width:0;
+  text-align:center;
+  white-space:normal;
+}
+
+.card,
+.box,
+.stat,
+.top-card,
+.podium-card{
+  max-width:100%;
+  min-width:0;
+}
+
+.form-grid{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:12px !important;
+  width:100%;
+}
+
+.field{
+  width:100%;
+  min-width:0;
+}
+
+input,
+select,
+textarea{
+  width:100% !important;
+  max-width:100%;
+  min-width:0;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  width:100%;
+}
+
+.actions .btn,
+.actions button,
+.btn{
+  min-width:0;
+  max-width:100%;
+}
+
+.cards,
+.stats-grid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+}
+
+.stat{
+  width:100%;
+  min-width:0;
+}
+
+.table-wrap,
+.table-wrapper{
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+table{
+  max-width:none;
+}
+
+img{
+  max-width:100%;
+}
+
+@media(max-width:700px){
+
+  .container{
+    width:100%;
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  .topbar,
+  .header{
+    padding:12px;
+  }
+
+  .topbar-inner,
+  .header-inner{
+    width:100%;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .nav{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px;
+  }
+
+  .nav a,
+  .nav button{
+    padding:11px 8px;
+    font-size:12px;
+  }
+
+  .hero{
+    padding:15px 4px;
+  }
+
+  .hero h1{
+    font-size:26px;
+    line-height:1.15;
+  }
+
+  .card,
+  .box{
+    width:100%;
+    padding:14px;
+  }
+
+  .cards,
+  .stats-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .actions .btn,
+  .actions button{
+    width:100%;
+  }
+
+  button,
+  .btn{
+    min-height:42px;
+  }
+
+  .record-player-row{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:9px !important;
+  }
+
+  .result-select{
+    width:100% !important;
+  }
+
+  .score-grid{
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+  }
+
+  .table-wrap,
+  .table-wrapper{
+    width:100%;
+    overflow-x:auto;
+  }
+
+  th,
+  td{
+    padding:9px 8px;
+    font-size:12px;
+  }
+}
+
+@media(max-width:430px){
+
+  .container{
+    padding-left:9px;
+    padding-right:9px;
+  }
+
+  .nav{
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  .nav a,
+  .nav button{
+    font-size:11px;
+    padding:10px 5px;
+  }
+
+  .cards,
+  .stats-grid{
+    grid-template-columns:1fr 1fr !important;
+    gap:7px !important;
+  }
+
+  .actions{
+    grid-template-columns:1fr;
+  }
+
+  .card,
+  .box{
+    padding:12px;
+  }
+}
