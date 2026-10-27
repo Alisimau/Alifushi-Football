@@ -123,6 +123,21 @@ async function login(email, password){
 
 async function api(path, opts = {}){
 
+  if (/^\/rest\/v1\/(Players|player_match_records)(\?|$)/.test(path)) {
+    const league = localStorage.getItem('hk_active_league') || 'league1';
+    const method = (opts.method || 'GET').toUpperCase();
+    if (method === 'GET') {
+      path += (path.includes('?') ? '&' : '?') + 'league_id=' + (league === 'league2' ? 'eq.league2' : 'is.null');
+    }
+    if (method === 'POST' && opts.body) {
+      const payload = JSON.parse(opts.body);
+      const leagueId = league === 'league2' ? 'league2' : null;
+      opts = { ...opts, body: JSON.stringify(Array.isArray(payload)
+        ? payload.map(row => ({ ...row, league_id: leagueId }))
+        : { ...payload, league_id: leagueId }) };
+    }
+  }
+
   const headers = Object.assign(
     {
       apikey: APP_CONFIG.SUPABASE_PUBLISHABLE_KEY,
@@ -170,6 +185,11 @@ async function api(path, opts = {}){
   } catch {
     return text;
   }
+}
+
+function switchLeague(league) {
+  localStorage.setItem('hk_active_league', league === 'league2' ? 'league2' : 'league1');
+  window.location.reload();
 }
 
 

@@ -34,9 +34,11 @@ header{
   backdrop-filter:blur(25px) saturate(150%);
   -webkit-backdrop-filter:blur(25px) saturate(150%);
 }
-.header-inner{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 0}
-.logo{font-size:20px;font-weight:800}
-.logo span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 0}
+header .logo{display:none}
+.league-picker{display:flex;align-items:center;gap:10px;margin-right:auto;padding:7px 10px 7px 13px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.055)}
+.league-picker label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+#portalLeagueSelect{min-width:230px;padding:9px 30px 9px 11px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#0b1423;color:#f8fafc;font-size:13px;font-weight:650}
 .nav{display:flex;gap:8px;flex-wrap:wrap}
 .nav a{
   color:#fff;text-decoration:none;padding:9px 13px;border-radius:12px;
@@ -95,7 +97,9 @@ button{
 }
 footer{text-align:center;color:var(--muted);padding:35px 0}
 @media(max-width:600px){
-  .header-inner{align-items:flex-start;flex-direction:column}
+  .header-inner{align-items:flex-start;flex-direction:column;gap:8px;padding:8px 0}
+  .league-picker{width:100%;gap:8px;margin:0;padding:6px 7px 6px 10px}
+  #portalLeagueSelect{flex:1;width:1px;min-width:0;max-width:none;padding:8px 26px 8px 8px;font-size:12px}
   .nav{width:100%}.nav a{flex:1;text-align:center;font-size:13px}
   .hero{padding:38px 0 22px}
   .profile-head{align-items:flex-start}
@@ -106,6 +110,8 @@ footer{text-align:center;color:var(--muted);padding:35px 0}
 <header>
   <div class="container header-inner">
     <div class="logo">⚽ Haveeru Kulhun League<span>Public Player Statistics</span></div>
+    <div class="league-picker"><label for="portalLeagueSelect">Choose league</label>
+    <select id="portalLeagueSelect" aria-label="Choose league" onchange="switchPortalLeague(this.value)"><option value="league1">Haveeru Kulhun League</option><option value="league2">Academy (Male)</option></select></div>
     <nav class="nav">
       <a href="#leaderboard" onclick="showLeaderboard();return false;">🏆 Point Table</a>
       <a href="#players" onclick="showPlayers();return false;">👤 Players</a>
@@ -152,6 +158,10 @@ let players = [];
 let records = [];
 
 async function api(path){
+  const activeLeague = localStorage.getItem('hk_active_league') || 'league1';
+  if (/^(Players|player_match_records)(\?|$)/.test(path)) {
+    path += (path.includes('?') ? '&' : '?') + 'league_id=' + (activeLeague === 'league2' ? 'eq.league2' : 'is.null');
+  }
   const r = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
     headers:{
       apikey:SUPABASE_KEY,
@@ -162,7 +172,14 @@ async function api(path){
   return r.json();
 }
 
+function switchPortalLeague(league){
+  localStorage.setItem('hk_active_league', league === 'league2' ? 'league2' : 'league1');
+  window.location.reload();
+}
+
 async function load(){
+  const select = document.getElementById('portalLeagueSelect');
+  if (select) select.value = localStorage.getItem('hk_active_league') || 'league1';
   try{
     [players,records] = await Promise.all([
       api('Players?select=id,Name,"Nick Name",Photo_url&order=Name.asc'),

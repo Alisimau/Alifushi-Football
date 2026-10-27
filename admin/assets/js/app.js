@@ -3,6 +3,11 @@
 let players = [];
 let records = [];
 let editingPlayerId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('leagueSelect');
+  if (select) select.value = localStorage.getItem('hk_active_league') || 'league1';
+});
 let editingDailyRecordId = null;
 
 const $ = id => document.getElementById(id);

@@ -74,9 +74,42 @@ header{
 .header-inner{
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-end;
   gap:15px;
-  padding:13px 0;
+  padding:9px 0;
+}
+
+header .logo{display:none}
+
+.league-control{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-left:auto;
+  padding:7px 10px 7px 13px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.055);
+}
+
+.league-label{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+#publicLeagueSelect{
+  min-width:230px;
+  padding:9px 30px 9px 11px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+  background:#0b1423;
+  color:#f8fafc;
+  font-size:13px;
+  font-weight:650;
 }
 
 .logo{
@@ -232,9 +265,8 @@ header{
 .hero-banner img{
   display:block;
   width:100%;
-  height:auto;
-  aspect-ratio:1920/700;
-  object-fit:cover;
+  height:clamp(120px,19vw,250px);
+  object-fit:fill;
 }
 
 .hero-banner:after{
@@ -250,6 +282,31 @@ header{
       transparent 55%,
       rgba(0,0,0,.18)
     );
+}
+
+.banner-actions{position:absolute;right:14px;bottom:13px;z-index:2;display:flex;gap:7px}
+.banner-action{padding:8px 11px;border:1px solid rgba(255,255,255,.38);border-radius:11px;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.07));color:#fff;font-size:11px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 6px 18px rgba(0,0,0,.22);backdrop-filter:blur(16px) saturate(145%);-webkit-backdrop-filter:blur(16px) saturate(145%)}
+.banner-action:hover{background:linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,255,255,.12))}
+.winner-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(1,5,12,.78);backdrop-filter:blur(10px)}
+.winner-modal.open{display:flex}
+.winner-dialog{width:min(820px,100%);max-height:90vh;overflow:auto;padding:22px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,#111d30,#07111f);box-shadow:0 28px 90px rgba(0,0,0,.55)}
+.winner-dialog-head,.winner-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.winner-dialog-actions{display:flex;align-items:center;gap:8px}.winner-dialog h2,.winner-dialog h3{margin:0}.winner-dialog h2{font-size:22px}.winner-close,.winner-share-button{padding:7px 11px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-weight:750}.winner-share-button{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.32)}
+.winner-share-button:disabled{opacity:.5;cursor:not-allowed}
+.winner-month-picker{display:flex;align-items:center;gap:10px;margin:16px 0 20px}.winner-month-picker label{color:var(--muted);font-size:13px;font-weight:700}.winner-month-picker input{max-width:210px;padding:9px 11px}
+.winner-section-head{margin:18px 0 10px}.winner-section-head p{margin:0;color:var(--muted);font-size:12px}
+.winner-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.winner-card{padding:15px;text-align:center;border-color:rgba(251,191,36,.22)}.winner-card:first-child{border-color:rgba(251,191,36,.55)}
+.winner-card img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.24)}.winner-place{margin:2px 0 8px;color:var(--gold);font-size:12px;font-weight:900}.winner-player-name{margin-top:8px;font-size:15px;font-weight:850;overflow-wrap:anywhere}.winner-points{margin:5px 0 9px;color:#7dd3fc;font-size:19px;font-weight:900}.winner-stats{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:11px}
+.appearances-list{display:grid;gap:7px}.appearance-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035)}.appearance-row img{width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover}.appearance-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:750}.appearance-count{white-space:nowrap;color:#7dd3fc;font-size:12px;font-weight:800}.winner-empty{padding:18px;text-align:center;color:var(--muted)}
+#monthlyWinnerPanel{display:none!important}
+
+@media(max-width:600px){
+  .banner-actions{right:8px;bottom:8px;gap:5px}.banner-action{padding:7px 8px;font-size:10px}
+  .winner-modal{padding:10px}.winner-dialog{padding:16px;border-radius:17px}.winner-dialog h2{font-size:19px}
+  .winner-dialog-head{gap:6px}.winner-dialog-actions{gap:4px}.winner-close,.winner-share-button{padding:6px 7px;font-size:11px}
+  .winner-month-picker{align-items:flex-start;flex-direction:column;gap:6px;margin:13px 0 16px}.winner-month-picker input{max-width:none;width:100%}
+  .winner-cards{grid-template-columns:1fr;gap:8px}.winner-card{display:grid;grid-template-columns:58px 1fr;column-gap:12px;align-items:center;padding:10px;text-align:left}
+  .winner-card img{grid-row:1/5;width:54px;height:54px}.winner-place,.winner-player-name,.winner-points{margin:0}.winner-stats{justify-content:flex-start}
 }
 
 .hero{
@@ -344,6 +401,7 @@ header{
 }
 
 .status{
+  display:none;
   color:var(--muted);
   font-size:13px;
   margin:0 0 12px;
@@ -463,6 +521,59 @@ header{
   font-size:11px;
   color:var(--muted);
   font-weight:600;
+}
+
+.matches-section{
+  margin:4px 0 24px;
+}
+
+.match-leaders{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+
+.match-leader-card{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  padding:12px;
+}
+
+.match-leader-rank{
+  color:var(--gold);
+  font-size:12px;
+  font-weight:900;
+}
+
+.match-leader-photo{
+  width:46px;
+  height:46px;
+  flex:0 0 46px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(255,255,255,.2);
+}
+
+.match-leader-info{
+  min-width:0;
+  flex:1;
+}
+
+.match-leader-name{
+  overflow:hidden;
+  color:#fff;
+  font-size:13px;
+  font-weight:800;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.match-leader-count{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:11px;
 }
 
 /* =========================
@@ -852,13 +963,25 @@ footer{
   /* Header */
 
   .header-inner{
-    align-items:flex-start;
-    flex-direction:column;
-    padding:10px 0;
+    align-items:center;
+    flex-direction:row;
+    gap:0;
+    padding:6px 0;
   }
 
-  .logo{
-    font-size:17px;
+  .league-control{
+    width:100%;
+    gap:8px;
+    padding:6px 7px 6px 10px;
+  }
+
+  #publicLeagueSelect{
+    flex:1;
+    width:1px;
+    min-width:0;
+    max-width:none;
+    padding:8px 26px 8px 8px!important;
+    font-size:12px;
   }
 
   .nav{
@@ -877,10 +1000,17 @@ footer{
   /* Hero */
 
   .hero-banner{
-    margin-top:12px;
+    margin-top:8px;
     margin-bottom:14px;
     border-radius:16px;
   }
+
+  .match-leaders{gap:6px}
+  .match-leader-card{flex-direction:column;gap:4px;padding:9px 5px;text-align:center}
+  .match-leader-photo{width:30px;height:30px;flex-basis:30px}
+  .match-leader-info{width:100%;flex:none}
+  .match-leader-name{font-size:11px}
+  .match-leader-count{font-size:10px}
 
   .hero{
     padding:6px 0 14px;
@@ -1263,6 +1393,12 @@ footer{
     font-size:15px;
   }
 
+  .match-leaders{gap:4px}
+  .match-leader-card{padding:7px 3px}
+  .match-leader-photo{width:26px;height:26px;flex-basis:26px}
+  .match-leader-name{font-size:9px}
+  .match-leader-count{font-size:8px}
+
   .table-wrap th,
   .table-wrap td{
     font-size:8px;
@@ -1294,6 +1430,10 @@ footer{
     <div class="logo">
       ⚽ Haveeru Kulhun League
       <span>Public Player Statistics</span>
+    </div>
+    <div class="league-control">
+      <label class="league-label" for="publicLeagueSelect">Choose league</label>
+      <select id="publicLeagueSelect" aria-label="Choose league" onchange="switchPublicLeague(this.value)"><option value="league1">Haveeru Kulhun League</option><option value="league2">Academy (Male)</option></select>
     </div>
 
   </div>
@@ -1329,7 +1469,29 @@ footer{
       src="assets/haveeru-kulhun-banner.jpg"
       alt="Haveeru Kulhun League">
 
+    <div class="banner-actions">
+      <button class="banner-action" type="button" onclick="openMonthlyWinners()">🏆 Monthly Winners</button>
+      <button class="banner-action" type="button" onclick="shareLeagueJpg()">Share League JPG</button>
+    </div>
+
   </section>
+
+  <div id="monthlyWinnerModal" class="winner-modal" onclick="closeMonthlyWinners()" aria-hidden="true">
+    <section class="winner-dialog" role="dialog" aria-modal="true" aria-labelledby="winnerDialogTitle" onclick="event.stopPropagation()">
+      <div class="winner-dialog-head">
+        <h2 id="winnerDialogTitle">Monthly Winners</h2>
+        <div class="winner-dialog-actions">
+          <button id="monthlyJpgButton" class="winner-share-button" type="button" onclick="shareMonthlyJpg()">Share JPG</button>
+          <button class="winner-close" type="button" aria-label="Close monthly winners" onclick="closeMonthlyWinners()">Close</button>
+        </div>
+      </div>
+      <div class="winner-month-picker">
+        <label for="monthlyWinnerMonth">Choose month</label>
+        <input id="monthlyWinnerMonth" type="month" onchange="showMonthlyWinners()">
+      </div>
+      <div id="monthlyWinnerPopupResults" aria-live="polite"></div>
+    </section>
+  </div>
 
 
   <div class="home-navigation">
@@ -1354,8 +1516,15 @@ footer{
 
 
   <div id="status" class="status">
-    Loading player data...
   </div>
+
+  <section id="matchesSection" class="matches-section">
+    <div class="section-title">
+      <h2>Most Matches Played</h2>
+      <p>Top 3 by appearances</p>
+    </div>
+    <div id="matchLeaders" class="match-leaders"></div>
+  </section>
 
 
   <!-- TOP 3 -->
@@ -1505,6 +1674,11 @@ let records = [];
 
 async function api(path){
 
+  const activeLeague = localStorage.getItem('hk_active_league') || 'league1';
+  if (/^(Players|player_match_records)(\?|$)/.test(path)) {
+    path += (path.includes('?') ? '&' : '?') + 'league_id=' + (activeLeague === 'league2' ? 'eq.league2' : 'is.null');
+  }
+
   const r = await fetch(
     SUPABASE_URL + "/rest/v1/" + path,
     {
@@ -1531,7 +1705,15 @@ async function api(path){
    LOAD DATA
 ================================================== */
 
+function switchPublicLeague(league){
+  localStorage.setItem('hk_active_league', league === 'league2' ? 'league2' : 'league1');
+  window.location.reload();
+}
+
 async function load(){
+
+  const select = document.getElementById('publicLeagueSelect');
+  if (select) select.value = localStorage.getItem('hk_active_league') || 'league1';
 
   try{
 
@@ -1561,6 +1743,7 @@ async function load(){
 
     document.getElementById("status").textContent =
       "Unable to load player data. Check your Supabase connection.";
+    document.getElementById("status").style.display = "block";
 
     console.error(e);
 
@@ -1831,6 +2014,38 @@ function buildLeaderboard(){
     rows.slice(0,3)
   );
 
+  renderMostMatches(rows);
+
+}
+
+
+function renderMostMatches(rows){
+  const box = document.getElementById('matchLeaders');
+  const top = rows
+    .filter(x => x.matches > 0)
+    .sort((a,b) =>
+      b.matches-a.matches ||
+      b.wins-a.wins ||
+      b.points-a.points ||
+      String(a.player.Name || '').localeCompare(String(b.player.Name || ''))
+    )
+    .slice(0,3);
+
+  if(!top.length){
+    box.innerHTML = '<div class="card" style="grid-column:1/-1;padding:14px">No match appearances yet.</div>';
+    return;
+  }
+
+  box.innerHTML = top.map((x,i)=>`
+    <div class="card match-leader-card">
+      <span class="match-leader-rank">#${i+1}</span>
+      <img class="match-leader-photo" src="${escapeAttr(photoFor(x.player,90))}" alt="" onerror="this.src='https://placehold.co/90x90?text=Player'">
+      <div class="match-leader-info">
+        <div class="match-leader-name">${escapeHtml(x.player.Name || '')}</div>
+        <div class="match-leader-count">${x.matches} ${x.matches === 1 ? 'match' : 'matches'}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 
@@ -2539,6 +2754,266 @@ function getPreviousMonth(){
 
   return `${year}-${month}`;
 }
+
+function getMonthlyStats(month){
+  const monthlyRecords=records.filter(r=>String(r.match_date||'').slice(0,7)===month);
+  return players.map(player=>{
+    const playerRecords=monthlyRecords.filter(r=>Number(r.player_id)===Number(player.id));
+    const stats={player,matches:playerRecords.length,wins:0,draws:0,losses:0,clean:0,points:0,gd:0};
+    playerRecords.forEach(r=>{
+      const result=resultFor(r);
+      if(result==='Win') stats.wins++;
+      if(result==='Draw') stats.draws++;
+      if(result==='Loss') stats.losses++;
+      if(r.clean_sheet) stats.clean++;
+      stats.points+=Number(r.points||0);
+      if(r.player_score!=null&&r.opposition_score!=null){
+        stats.gd+=Number(r.player_score)-Number(r.opposition_score);
+      }
+    });
+    return stats;
+  }).filter(x=>x.matches>0).sort((a,b)=>
+    b.points-a.points||b.wins-a.wins||b.gd-a.gd||b.clean-a.clean||
+    String(a.player.Name||'').localeCompare(String(b.player.Name||''))
+  );
+}
+
+function openMonthlyWinners(){
+  const modal=document.getElementById('monthlyWinnerModal');
+  const picker=document.getElementById('monthlyWinnerMonth');
+  if(!picker.value){
+    const now=new Date();
+    picker.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  }
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  showMonthlyWinners();
+  picker.focus();
+}
+
+function closeMonthlyWinners(){
+  const modal=document.getElementById('monthlyWinnerModal');
+  if(!modal||!modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+  document.querySelector('.banner-action')?.focus();
+}
+
+function showMonthlyWinners(){
+  const month=document.getElementById('monthlyWinnerMonth').value;
+  const container=document.getElementById('monthlyWinnerPopupResults');
+  const jpgButton=document.getElementById('monthlyJpgButton');
+  if(jpgButton) jpgButton.disabled=!month;
+  if(!month){container.innerHTML='<div class="winner-empty">Choose a month to see its winners.</div>';return;}
+
+  const monthStats=getMonthlyStats(month);
+  if(jpgButton) jpgButton.disabled=!monthStats.length;
+  if(!monthStats.length){
+    container.innerHTML='<div class="winner-empty">No match records were saved for this month.</div>';
+    return;
+  }
+
+  const monthName=new Date(`${month}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const winners=monthStats.slice(0,3);
+  const appearances=[...monthStats].sort((a,b)=>
+    b.matches-a.matches||b.wins-a.wins||b.points-a.points||
+    String(a.player.Name||'').localeCompare(String(b.player.Name||''))
+  ).slice(0,3);
+  const places=['1st Place','2nd Place','3rd Place'];
+
+  container.innerHTML=`
+    <div class="winner-section-head"><h3>${escapeHtml(monthName)} Winners</h3><p>Ranked by points</p></div>
+    <div class="winner-cards">
+      ${winners.map((x,i)=>`
+        <article class="card winner-card">
+          <div class="winner-place">${places[i]}</div>
+          <img src="${escapeAttr(photoFor(x.player,120))}" alt="${escapeAttr(x.player.Name||'Player')}" onerror="this.src='https://placehold.co/120x120?text=Player'">
+          <div class="winner-player-name">${escapeHtml(x.player.Name||'')}</div>
+          <div class="winner-points">${x.points} points</div>
+          <div class="winner-stats"><span>${x.matches} played</span><span>${x.wins}W</span><span>${x.draws}D</span><span>${x.losses}L</span></div>
+        </article>
+      `).join('')}
+    </div>
+    <div class="winner-section-head"><h3>Most Matches Played</h3><p>Top 3 appearances</p></div>
+    <div class="appearances-list">
+      ${appearances.map((x,i)=>`
+        <div class="appearance-row">
+          <img src="${escapeAttr(photoFor(x.player,90))}" alt="" onerror="this.src='https://placehold.co/90x90?text=Player'">
+          <span class="appearance-name">${i+1}. ${escapeHtml(x.player.Name||'')}</span>
+          <span class="appearance-count">${x.matches} ${x.matches===1?'match':'matches'}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function getLeagueStandings(){
+  return players.map(player=>({player,...statsForPlayer(player.id)})).sort((a,b)=>
+    b.points-a.points||b.wins-a.wins||b.gd-a.gd||b.clean-a.clean||
+    String(a.player.Name||'').localeCompare(String(b.player.Name||''))
+  );
+}
+
+function getLeagueName(){
+  return (localStorage.getItem('hk_active_league')||'league1')==='league2'
+    ? 'Academy (Male)'
+    : 'Haveeru Kulhun League';
+}
+
+function loadSharePhoto(url){
+  return new Promise(resolve=>{
+    const image=new Image();
+    image.crossOrigin='anonymous';
+    image.onload=()=>resolve(image);
+    image.onerror=()=>resolve(null);
+    image.src=url;
+  });
+}
+
+function drawShareAvatar(ctx,image,x,y,size,name){
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);
+  ctx.clip();
+  if(image){
+    ctx.drawImage(image,x,y,size,size);
+  }else{
+    ctx.fillStyle='#1d3854';
+    ctx.fillRect(x,y,size,size);
+    ctx.fillStyle='#e2e8f0';
+    ctx.font=`700 ${Math.round(size*.34)}px Arial`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(String(name||'?').trim().slice(0,1).toUpperCase(),x+size/2,y+size/2);
+  }
+  ctx.restore();
+}
+
+function makeShareCanvas(title,subtitle,rows,leaders,monthLabel=''){
+  const canvas=document.createElement('canvas');
+  const monthly=Boolean(monthLabel);
+  const width=1200;
+  const tableTop=monthly?635:260;
+  canvas.width=width;
+  canvas.height=monthly?tableTop+72+10*70+70:tableTop+72+10*70+70;
+  const ctx=canvas.getContext('2d');
+  const bg=ctx.createLinearGradient(0,0,width,canvas.height);
+  bg.addColorStop(0,'#0b1729');bg.addColorStop(1,'#030811');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,width,canvas.height);
+
+  ctx.fillStyle='#38bdf8';ctx.fillRect(64,60,9,90);
+  ctx.fillStyle='#94a3b8';ctx.font='700 19px Arial';ctx.textAlign='left';
+  ctx.fillText('ALIFUSHI FOOTBALL',94,82);
+  ctx.fillStyle='#f8fafc';ctx.font='800 42px Arial';
+  ctx.fillText(title,94,133);
+  ctx.fillStyle='#aebbd0';ctx.font='22px Arial';
+  ctx.fillText(subtitle,94,172);
+  ctx.textAlign='right';ctx.fillStyle='#f5c451';ctx.font='700 18px Arial';
+  ctx.fillText(getLeagueName(),width-66,82);
+  ctx.textAlign='left';
+
+  if(monthly){
+    ctx.fillStyle='#f5c451';ctx.font='800 24px Arial';ctx.fillText('MONTHLY TOP 3',66,222);
+    const cardY=245,cardW=340,cardH=320,gap=24;
+    leaders.slice(0,3).forEach((row,index)=>{
+      const x=66+index*(cardW+gap);
+      ctx.fillStyle=index===0?'#1b2a3c':'#132135';
+      ctx.fillRect(x,cardY,cardW,cardH);
+      ctx.strokeStyle=index===0?'#f5c451':'#334155';ctx.lineWidth=2;ctx.strokeRect(x,cardY,cardW,cardH);
+      ctx.textAlign='center';ctx.fillStyle=index===0?'#f5c451':'#cbd5e1';ctx.font='800 19px Arial';
+      ctx.fillText(['1ST PLACE','2ND PLACE','3RD PLACE'][index],x+cardW/2,cardY+36);
+      drawShareAvatar(ctx,row.sharePhoto,x+cardW/2-50,cardY+58,100,row.player.Name);
+      ctx.fillStyle='#fff';ctx.font='800 23px Arial';
+      ctx.fillText(String(row.player.Name||'Player').slice(0,24),x+cardW/2,cardY+194);
+      ctx.fillStyle='#7dd3fc';ctx.font='800 25px Arial';ctx.fillText(`${row.points} POINTS`,x+cardW/2,cardY+235);
+      ctx.fillStyle='#aebbd0';ctx.font='17px Arial';ctx.fillText(`${row.matches} played  •  ${row.wins}W ${row.draws}D ${row.losses}L`,x+cardW/2,cardY+275);
+    });
+    ctx.textAlign='left';ctx.fillStyle='#f8fafc';ctx.font='800 25px Arial';
+    ctx.fillText(`${monthLabel.toUpperCase()} · LEAGUE TABLE (TOP 10)`,66,610);
+  }else{
+    ctx.fillStyle='#f8fafc';ctx.font='800 25px Arial';ctx.fillText('LEAGUE TABLE · TOP 10',66,220);
+  }
+
+  const headerY=tableTop;
+  ctx.fillStyle='#17263a';ctx.fillRect(64,headerY,width-128,60);
+  ctx.fillStyle='#94a3b8';ctx.font='700 15px Arial';ctx.textAlign='left';
+  const cols=[['#',84],['PLAYER',140],['P',685],['W',770],['D',835],['L',900],['GD',965],['CS',1030],['PTS',1090]];
+  cols.forEach(([label,x])=>ctx.fillText(label,x,headerY+38));
+
+  rows.slice(0,10).forEach((row,index)=>{
+    const y=headerY+60+index*70;
+    ctx.fillStyle=index%2?'rgba(255,255,255,.025)':'rgba(255,255,255,.06)';ctx.fillRect(64,y,width-128,70);
+    ctx.fillStyle=index<3?'#f5c451':'#dbe4f0';ctx.font='800 18px Arial';ctx.fillText(String(index+1),84,y+42);
+    drawShareAvatar(ctx,row.sharePhoto,128,y+11,48,row.player.Name);
+    ctx.textAlign='left';ctx.fillStyle='#fff';ctx.font='700 17px Arial';
+    ctx.fillText(String(row.player.Name||'Player').slice(0,38),190,y+42);
+    ctx.fillStyle='#dbe4f0';ctx.font='17px Arial';
+    [row.matches,row.wins,row.draws,row.losses,row.gd>0?`+${row.gd}`:row.gd,row.clean,row.points].forEach((value,i)=>ctx.fillText(String(value),cols[i+2][1],y+42));
+  });
+
+  ctx.fillStyle='#64748b';ctx.font='15px Arial';ctx.textAlign='left';
+  ctx.fillText('Generated from the current league records',66,canvas.height-24);
+  ctx.textAlign='right';ctx.fillText('ALIFUSHI FOOTBALL',width-66,canvas.height-24);
+  return canvas;
+}
+
+async function shareCanvasJpg(canvas,fileName,button){
+  const original=button?.textContent;
+  if(button){button.disabled=true;button.textContent='Preparing JPG…';}
+  try{
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.94));
+    if(!blob) throw new Error('Could not create the JPG image.');
+    if(navigator.share&&typeof File!=='undefined'){
+      const file=new File([blob],fileName,{type:'image/jpeg'});
+      if(navigator.canShare?.({files:[file]})){
+        try{await navigator.share({files:[file],title:fileName.replace(/\.jpg$/i,'')});}
+        catch(error){if(error.name!=='AbortError') throw error;}
+        return;
+      }
+    }
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');link.href=url;link.download=fileName;
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(error){
+    console.error(error);
+    alert(error.message||'Unable to create the JPG.');
+  }finally{
+    if(button){button.disabled=false;button.textContent=original;}
+  }
+}
+
+async function addSharePhotos(rows){
+  return Promise.all(rows.map(async row=>({...row,sharePhoto:await loadSharePhoto(photoFor(row.player,160))})));
+}
+
+async function shareMonthlyJpg(){
+  const month=document.getElementById('monthlyWinnerMonth').value;
+  if(!month) return;
+  const monthlyRows=getMonthlyStats(month);
+  if(!monthlyRows.length){showMonthlyWinners();return;}
+  const button=document.getElementById('monthlyJpgButton');
+  const rows=await addSharePhotos(monthlyRows.slice(0,10));
+  const leaders=rows.slice(0,3);
+  const canvas=makeShareCanvas('MONTHLY WINNERS',new Date(`${month}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'}),rows,leaders,new Date(`${month}-01T12:00:00`).toLocaleDateString('en-US',{month:'long',year:'numeric'}));
+  await shareCanvasJpg(canvas,`monthly-winners-${month}.jpg`,button);
+}
+
+async function shareLeagueJpg(){
+  const button=document.querySelector('.banner-action:last-child');
+  const rawRows=getLeagueStandings().slice(0,10);
+  if(!rawRows.length){alert('No league records are available yet.');return;}
+  const rows=await addSharePhotos(rawRows);
+  const canvas=makeShareCanvas('LEAGUE STANDINGS',getLeagueName(),rows,[]);
+  const league=(localStorage.getItem('hk_active_league')||'league1')==='league2'?'academy-male':'haveeru-kulhun';
+  await shareCanvasJpg(canvas,`${league}-league-top-10.jpg`,button);
+}
+
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape') closeMonthlyWinners();
+});
 
 
 function renderLastMonthWinners(){
